@@ -2,21 +2,16 @@ package com.zjw.ting.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
-import android.util.Log
 import android.widget.Toast
 import com.eye.cool.permission.PermissionHelper
 import com.tangguna.searchbox.library.cache.HistoryCache
 import com.tangguna.searchbox.library.callback.onSearchCallBackListener
 import com.zjw.ting.R
-import com.zjw.ting.net.TingShuUtil
 import es.dmoral.toasty.Toasty
-import io.reactivex.Observable
-import io.reactivex.ObservableOnSubscribe
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -53,22 +48,10 @@ class MainActivity : AppCompatActivity() {
                 if (TextUtils.isEmpty(p0)) {
                     Toasty.warning(this@MainActivity, "亲，必须输入关键字哟~", Toast.LENGTH_SHORT, true).show()
                 } else {
-                    //需要异步操作
-                    Observable.create(ObservableOnSubscribe<ArrayList<String>> {
-                        try {
-                            val searchUrls = TingShuUtil.getSearchUrls(p0, TingShuUtil.countPage)
-                            it.onNext(searchUrls)
-                            it.onComplete()
-                        } catch (e: Error) {
-                            it.onError(e)
-                        }
-                    }).subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe {
-                            //跳转到搜素结果页面
-                            Log.e("tag", it.toString())
-                        }
-
+                    //跳转页面
+                    val intent = Intent(this@MainActivity, SearchResultActivity::class.java)
+                    intent.putExtra("keyWord", p0)
+                    startActivity(intent)
                 }
             }
 

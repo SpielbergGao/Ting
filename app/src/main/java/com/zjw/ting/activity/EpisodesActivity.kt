@@ -4,55 +4,41 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.GridLayoutManager
 import com.zjw.ting.R
-import com.zjw.ting.adapter.SearchResultAdapter
+import com.zjw.ting.adapter.EposodesAdapter
 import com.zjw.ting.net.TingShuUtil
 import es.dmoral.toasty.Toasty
 import io.reactivex.Observable
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_episodes.rv
 import kotlinx.android.synthetic.main.activity_search_result.*
 
-class SearchResultActivity : AppCompatActivity() {
+class EpisodesActivity : AppCompatActivity() {
 
     private val audioInfos = ArrayList<TingShuUtil.AudioInfo>()
-    private lateinit var adapter: SearchResultAdapter
-    private var pageIndex = 0L
+    private lateinit var adapter: EposodesAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_search_result)
+        setContentView(R.layout.activity_episodes)
 
+        //加载数据
         refreshData()
         swipeLayout.isRefreshing = true
         swipeLayout.setOnRefreshListener {
             refreshData()
         }
 
-
-        adapter = SearchResultAdapter(audioInfos, this@SearchResultActivity)
+        rv.layoutManager = GridLayoutManager(this@EpisodesActivity, 4)
+        adapter = EposodesAdapter(audioInfos, this@EpisodesActivity)
         rv.adapter = adapter
-        rv.useDefaultLoadMore()
-        rv.setAutoLoadMore(true)
-        rv.loadMoreFinish(false, true)
-        rv.setLoadMoreListener {
-            loadData(page = pageIndex, onSuccess = {
-                rv.loadMoreFinish(false, true)
-                pageIndex++
-                adapter.items?.addAll(it)
-                //展示搜素结果页面
-                adapter.notifyDataSetChanged()
-            }, onError = {
-                rv.loadMoreFinish(false, true)
-                it.message?.let { msg -> Toasty.error(this@SearchResultActivity, msg) }
-            }
-            )
-        }
-        adapter.onItemClickListener = object : SearchResultAdapter.OnItemClickListener {
+        adapter.onItemClickListener = object : EposodesAdapter.OnItemClickListener {
             override fun onItemClick(item: TingShuUtil.AudioInfo, position: Int) {
-                //跳转到集数页面
-                val intent = Intent(this@SearchResultActivity, EpisodesActivity::class.java)
+                //跳转到播放页面
+                val intent = Intent(this@EpisodesActivity, AudioActivity::class.java)
                 intent.putExtra("url", item.url)
                 startActivity(intent)
             }
@@ -60,25 +46,24 @@ class SearchResultActivity : AppCompatActivity() {
     }
 
     private fun refreshData() {
-        pageIndex = 0
-        loadData(page = TingShuUtil.countPage, onSuccess = {
+        loadData(onSuccess = {
             swipeLayout.isRefreshing = false
             adapter.items?.clear()
             adapter.items = it
             //展示搜素结果页面
             rv.adapter?.notifyDataSetChanged()
         }, onError = {
-            it.message?.let { msg -> Toasty.error(this@SearchResultActivity, msg) }
+            it.message?.let { msg -> Toasty.error(this@EpisodesActivity, msg).show() }
             swipeLayout.isRefreshing = false
         }
         )
     }
 
     @SuppressLint("CheckResult")
-    private fun loadData(page: Long, onSuccess: (list: ArrayList<TingShuUtil.AudioInfo>) -> Unit, onError: (e: Error) -> Unit) {
+    private fun loadData(onSuccess: (list: ArrayList<TingShuUtil.AudioInfo>) -> Unit, onError: (e: Error) -> Unit) {
         Observable.create(ObservableOnSubscribe<ArrayList<TingShuUtil.AudioInfo>> {
             try {
-                val urls = TingShuUtil.getSearchUrls(intent.getStringExtra("keyWord"), page)
+                val urls = TingShuUtil.getEpisodesUrls(intent.getStringExtra("url"))
                 it.onNext(urls)
                 it.onComplete()
             } catch (e: Error) {

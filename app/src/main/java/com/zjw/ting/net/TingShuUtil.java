@@ -6,33 +6,17 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class TingShuUtil {
     //有声听书吧
-   public static String httpHost = "https://www.ysts8.com";
-   public static String host = "www.ysts8.com";
-   public static String searchUrl = "/Ys_so.asp?stype=1&keyword=";
-   public static long countPage = -1;
+    public static String httpHost = "https://www.ysts8.com";
+    public static String host = "www.ysts8.com";
+    public static String searchUrl = "/Ys_so.asp?stype=1&keyword=";
+    public static long countPage = -1;
 
-
-    public static void main(String[] args) {
-        try {
-            String keyWord = "我当算命先生那几年";
-            ArrayList<String> searchUrls = getSearchUrls(keyWord, countPage);
-            ArrayList<String> episodesUrls = getEpisodesUrls(searchUrls.get(0));
-            String audioUrl = getAudioUrl(episodesUrls.get(0));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    public static ArrayList<String> getSearchUrls(String keyWord) throws IOException {
-        return  getSearchUrls(keyWord,-1);
-    }
     /**
      * 获取搜索到的作品列表信息
      *
@@ -41,11 +25,10 @@ public class TingShuUtil {
      * @return
      * @throws IOException
      */
-    public static ArrayList<String> getSearchUrls(String keyWord, long page) throws IOException {
-        ArrayList<String> searchUrls = new ArrayList<>();
-        ArrayList<String> searchInfos = new ArrayList<>();
+    public static ArrayList<AudioInfo> getSearchUrls(String keyWord, long page) throws IOException {
+        ArrayList<AudioInfo> audioInfos = new ArrayList<>();
         String keyParam = URLEncoder.encode(keyWord, "GB2312");
-        String pageParam = page >= 0 ? "&page=" + page : "";
+        String pageParam = page > 0 ? "&page=" + page : "";
         final Connection connection = Jsoup.connect(httpHost + searchUrl + keyParam + pageParam);
         setCommonHeader(connection);
         connection.header("path", searchUrl + keyParam + pageParam);
@@ -64,11 +47,10 @@ public class TingShuUtil {
         for (Element urlListElement : urlListElements) {
             //名称 状态
             //urlListElement.text() 代表该节点的内容文本以及其嵌套的子节点的内容文本
-            searchInfos.add(urlListElement.text().trim());
-            searchUrls.add(httpHost + urlListElement.attr("href"));
+            audioInfos.add(new AudioInfo(urlListElement.text().trim(), httpHost + urlListElement.attr("href")));
         }
-        //System.out.println(searchUrls);
-        return searchUrls;
+        //System.out.println(audioInfos);
+        return audioInfos;
     }
 
 
@@ -79,9 +61,8 @@ public class TingShuUtil {
      * @return
      * @throws IOException
      */
-    public static ArrayList<String> getEpisodesUrls(String url) throws IOException {
-        ArrayList<String> urls = new ArrayList<>();
-        ArrayList<String> episodes = new ArrayList<>();
+    public static ArrayList<AudioInfo> getEpisodesUrls(String url) throws IOException {
+        ArrayList<AudioInfo> audioInfos = new ArrayList<>();
 
         final Connection connection = Jsoup.connect(url);
         setCommonHeader(connection);
@@ -93,11 +74,12 @@ public class TingShuUtil {
         Elements urlListElements = listDiv.select("a[href]");
         for (Element urlListElement : urlListElements) {
             //<a href="/play_16702_55_1_1.html" title="001.mp3">[第001集]</a>
-            episodes.add(urlListElement.text().trim());
-            urls.add(httpHost + urlListElement.attr("href"));
+            if (urlListElement.outerHtml().contains("集")) {
+                audioInfos.add(new AudioInfo(urlListElement.text().trim(), httpHost + urlListElement.attr("href")));
+            }
         }
-        //System.out.println(urls);
-        return urls;
+        //System.out.println(audioInfos);
+        return audioInfos;
     }
 
     /**
@@ -173,5 +155,40 @@ public class TingShuUtil {
         connect.header("accept-encoding", "gzip, deflate, br");
         connect.header("accept-language", "zh-CN,zh;q=0.9,en;q=0.8");
         connect.header("upgrade-insecure-requests", "1");
+    }
+
+    public static class AudioInfo {
+        private String info;
+        private String url;
+
+
+        public AudioInfo(String info, String url) {
+            this.info = info;
+            this.url = url;
+        }
+
+        public String getInfo() {
+            return info;
+        }
+
+        public void setInfo(String info) {
+            this.info = info;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public String toString() {
+            return "AudioInfo{" +
+                    "info='" + info + '\'' +
+                    ", url='" + url + '\'' +
+                    '}';
+        }
     }
 }
