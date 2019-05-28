@@ -3,8 +3,8 @@ package com.zjw.ting.activity
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.GridLayoutManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.GridLayoutManager
 import com.zjw.ting.R
 import com.zjw.ting.adapter.EposodesAdapter
 import com.zjw.ting.net.TingShuUtil
@@ -32,13 +32,13 @@ class EpisodesActivity : AppCompatActivity() {
             refreshData()
         }
 
-        rv.layoutManager = GridLayoutManager(this@EpisodesActivity, 4)
+        rv.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this@EpisodesActivity, 4)
         adapter = EposodesAdapter(audioInfos, this@EpisodesActivity)
         rv.adapter = adapter
         adapter.onItemClickListener = object : EposodesAdapter.OnItemClickListener {
             override fun onItemClick(item: TingShuUtil.AudioInfo, position: Int) {
                 //跳转到播放页面
-                val intent = Intent(this@EpisodesActivity, AudioActivity::class.java)
+                val intent = Intent(this@EpisodesActivity, AudioPlayActivity::class.java)
                 intent.putExtra("url", item.url)
                 startActivity(intent)
             }

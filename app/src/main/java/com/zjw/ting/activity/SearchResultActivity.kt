@@ -3,7 +3,7 @@ package com.zjw.ting.activity
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.zjw.ting.R
 import com.zjw.ting.adapter.SearchResultAdapter
 import com.zjw.ting.net.TingShuUtil

@@ -1,11 +1,11 @@
 package com.zjw.ting.activity
 
 import android.annotation.SuppressLint
-import android.media.MediaPlayer
+import android.media.AudioManager
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import com.lzx.starrysky.model.SongInfo
+import androidx.appcompat.app.AppCompatActivity
+import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.zjw.ting.R
 import com.zjw.ting.net.TingShuUtil
 import es.dmoral.toasty.Toasty
@@ -14,66 +14,99 @@ import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_audio_play.*
+import tv.danmaku.ijk.media.player.IjkMediaPlayer
+import java.net.URLEncoder
+
 
 class AudioPlayActivity : AppCompatActivity() {
 
-    private var mediaPlayer: MediaPlayer? = null
+    private var mMediaPlayer: IjkMediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_audio_play)
 
-        val s1 = SongInfo()
-        s1.songId = "111"
-        s1.songUrl = ""
-
+        // videoPlayer.setUp("http://9890.vod.myqcloud.com/9890_4e292f9a3dd011e6b4078980237cc3d3.f20.mp4", true, "测试视频");
+        // var url = "http://180l.ysts8.com:8000/恐怖小说/我当算命先生那些年/014.mp3?1231710044742x1558968690x1231716175402-f002e814b9d51c55addf150d702074fc?3"
         loadData(onSuccess = {
             Log.e("tag", "" + it)
+            var url = handleUrl(it)
             Toasty.success(this@AudioPlayActivity, "get url $it").show()
-            s1.songUrl = it
+            videoPlayer.setUp(url, true, "测试视频")
+            videoPlayer.startPlayLogic()
         }, onError = {
             it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
         })
-
-        //s1.songCover = "https://www.qqkw.com/d/file/p/2018/04-21/c24fd86006670f964e63cb8f9c129fc6.jpg"
-        //s1.songName = "心雨"
-        //s1.artist = "贤哥"
-
-        val songInfos = ArrayList<SongInfo>()
-        songInfos.add(s1)
-
-        playTv.setOnClickListener { v ->
-            // MusicManager.getInstance().playMusic(songInfos, 0)
-            // playAudio("http://180l.ysts8.com:8000/恐怖小说/我当算命先生那些年/014.mp3?1231710044742x1558968690x1231716175402-f002e814b9d51c55addf150d702074fc?3")
-            playAudio("http://fs.w.kugou.com/201905272309/3c16fd91c7c8f3953c42ad9832de7ba7/G018/M06/04/10/Ug0DAFVe7COANQyAAD8RTmmcMlM249.mp3")
-        }
     }
+
+    private fun handleUrl(url: String): String {
+        var url1 = url
+        val toCharArray = url1.toCharArray()
+        toCharArray.forEachIndexed { _, c ->
+            if (isChineseChar(c)) {
+                url1 = url1.replace(c.toString(), URLEncoder.encode(c.toString(), "utf-8"))
+            }
+        }
+        return url1
+    }
+
+    fun isChineseChar(c: Char): Boolean {
+        return c.toString().matches("[\u4e00-\u9fa5]".toRegex())
+    }
+
+    override fun onPause() {
+        super.onPause()
+        videoPlayer.onVideoPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        videoPlayer.onVideoResume()
+    }
+
 
     @Throws(Exception::class)
     private fun playAudio(url: String) {
-        killMediaPlayer()
+        if (mMediaPlayer != null) {
+            releasePlayer()
+        }
 
-        mediaPlayer = MediaPlayer()
-        //mediaPlayer?.setAudioStreamType(AudioManager.STREAM_MUSIC)
-        mediaPlayer?.setDataSource(url)
-        mediaPlayer?.prepareAsync()
-        mediaPlayer?.start()
-    }
+        mMediaPlayer = IjkMediaPlayer()
+        mMediaPlayer?.setAudioStreamType(AudioManager.STREAM_MUSIC)
+        mMediaPlayer?.dataSource = url
+        mMediaPlayer?.prepareAsync()
 
-    private fun killMediaPlayer() {
-        if (mediaPlayer != null) {
-            try {
-                mediaPlayer?.release()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+        mMediaPlayer?.setOnSeekCompleteListener {
 
         }
+        mMediaPlayer?.setOnCompletionListener {
+            releasePlayer()
+        }
+
+        mMediaPlayer?.setOnPreparedListener {
+            mMediaPlayer?.start()
+        }
+    }
+
+    /**
+     * 释放播放器
+     */
+    private fun releasePlayer() {
+        mMediaPlayer?.let {
+            if (it.isPlaying) {
+                it.stop()
+            }
+            it.release()
+            mMediaPlayer = null
+        }
+        System.gc()
+
+
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        killMediaPlayer()
+        GSYVideoManager.releaseAllVideos()
     }
 
     @SuppressLint("CheckResult")

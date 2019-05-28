@@ -1,7 +1,7 @@
 package com.zjw.ting.adapter
 
 import android.content.Context
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +11,7 @@ import com.zjw.ting.net.TingShuUtil
 import kotlinx.android.synthetic.main.item_search_result.view.*
 
 class SearchResultAdapter(var items: ArrayList<TingShuUtil.AudioInfo>?, private val context: Context) :
-    RecyclerView.Adapter<SearchResultAdapter.ResultViewHolder>() {
+    androidx.recyclerview.widget.RecyclerView.Adapter<SearchResultAdapter.ResultViewHolder>() {
 
     var onItemClickListener: OnItemClickListener? = null
 
@@ -38,7 +38,7 @@ class SearchResultAdapter(var items: ArrayList<TingShuUtil.AudioInfo>?, private 
         return items?.size ?: 0
     }
 
-    inner class ResultViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class ResultViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
 
         fun set(item: TingShuUtil.AudioInfo) {
             //UI setting code
