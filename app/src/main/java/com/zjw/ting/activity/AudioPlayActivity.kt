@@ -1,11 +1,10 @@
 package com.zjw.ting.activity
 
 import android.annotation.SuppressLint
-import android.media.AudioManager
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.shuyu.gsyvideoplayer.GSYVideoManager
+import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack
 import com.zjw.ting.R
 import com.zjw.ting.net.TingShuUtil
 import es.dmoral.toasty.Toasty
@@ -14,94 +13,101 @@ import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_audio_play.*
-import tv.danmaku.ijk.media.player.IjkMediaPlayer
 import java.net.URLEncoder
 
 
 class AudioPlayActivity : AppCompatActivity() {
 
-    private var mMediaPlayer: IjkMediaPlayer? = null
+    private var position: Int = 1
+    private var mAudioInfo: TingShuUtil.AudioInfo? = null
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_audio_play)
 
         // videoPlayer.setUp("http://9890.vod.myqcloud.com/9890_4e292f9a3dd011e6b4078980237cc3d3.f20.mp4", true, "测试视频");
         // var url = "http://180l.ysts8.com:8000/恐怖小说/我当算命先生那些年/014.mp3?1231710044742x1558968690x1231716175402-f002e814b9d51c55addf150d702074fc?3"
-        loadData(onSuccess = {
-            var url = handleUrl(it)
-            Toasty.success(this@AudioPlayActivity, "url $it").show()
-            videoPlayer.setUp(url, true, intent.getStringExtra("info"))
-            videoPlayer.startPlayLogic()
+        position = intent.getIntExtra("position", 1)
+        loadData(intent.getStringExtra("url"), onSuccess = {
+            setTitleAndPlay(it)
+            videoPlayer.setVideoAllCallBack(object : GSYSampleCallBack() {
+                override fun onAutoComplete(url: String?, vararg objects: Any?) {
+                    playNext()
+                }
+            })
         }, onError = {
             it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
         })
-    }
 
-    private fun handleUrl(url: String): String {
-        var url1 = url
-        val toCharArray = url1.toCharArray()
-        toCharArray.forEachIndexed { _, c ->
-            if (isChineseChar(c)) {
-                url1 = url1.replace(c.toString(), URLEncoder.encode(c.toString(), "utf-8"))
+        preBt.setOnClickListener {
+            if (position <= 1) {
+                return@setOnClickListener
+            }
+            mAudioInfo?.preUrl?.let { preUrl ->
+                loadData(preUrl, onSuccess = {
+                    GSYVideoManager.releaseAllVideos()
+                    position--
+                    setTitleAndPlay(it)
+                }, onError = {
+                    it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
+                })
             }
         }
-        return url1
+
+        nextBt.setOnClickListener {
+            playNext()
+        }
     }
 
-    fun isChineseChar(c: Char): Boolean {
+    @SuppressLint("SetTextI18n")
+    private fun playNext() {
+        mAudioInfo?.nextUrl?.let { nextUrl ->
+            loadData(nextUrl, onSuccess = {
+                GSYVideoManager.releaseAllVideos()
+                position++
+                setTitleAndPlay(it)
+            }, onError = {
+                it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
+            })
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun setTitleAndPlay(it: TingShuUtil.AudioInfo) {
+        Toasty.success(this@AudioPlayActivity, "url ${it.url}").show()
+        var url = handleUrl(it.url)
+        titleTv.text = intent.getStringExtra("info") + " ===【第 $position 集】"
+        videoPlayer.setUp(url, true, "")
+        videoPlayer.startPlayLogic()
+    }
+
+    //因为播放器不接受url中带有中文，因此需要做处理
+    private fun handleUrl(url: String): String {
+        var realUrl = url
+        val toCharArray = realUrl.toCharArray()
+        toCharArray.forEachIndexed { _, c ->
+            if (isChineseChar(c)) {
+                realUrl = realUrl.replace(c.toString(), URLEncoder.encode(c.toString(), "utf-8"))
+            }
+        }
+        return realUrl
+    }
+
+    private fun isChineseChar(c: Char): Boolean {
         return c.toString().matches("[\u4e00-\u9fa5]".toRegex())
     }
 
     override fun onPause() {
         super.onPause()
-        videoPlayer.onVideoPause()
+        // videoPlayer.onVideoPause()
     }
 
     override fun onResume() {
         super.onResume()
-        videoPlayer.onVideoResume()
+        // videoPlayer.onVideoResume()
     }
 
-
-    @Throws(Exception::class)
-    private fun playAudio(url: String) {
-        if (mMediaPlayer != null) {
-            releasePlayer()
-        }
-
-        mMediaPlayer = IjkMediaPlayer()
-        mMediaPlayer?.setAudioStreamType(AudioManager.STREAM_MUSIC)
-        mMediaPlayer?.dataSource = url
-        mMediaPlayer?.prepareAsync()
-
-        mMediaPlayer?.setOnSeekCompleteListener {
-
-        }
-        mMediaPlayer?.setOnCompletionListener {
-            releasePlayer()
-        }
-
-        mMediaPlayer?.setOnPreparedListener {
-            mMediaPlayer?.start()
-        }
-    }
-
-    /**
-     * 释放播放器
-     */
-    private fun releasePlayer() {
-        mMediaPlayer?.let {
-            if (it.isPlaying) {
-                it.stop()
-            }
-            it.release()
-            mMediaPlayer = null
-        }
-        System.gc()
-
-
-    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -109,13 +115,13 @@ class AudioPlayActivity : AppCompatActivity() {
     }
 
     @SuppressLint("CheckResult")
-    private fun loadData(onSuccess: (url: String) -> Unit, onError: (e: Error) -> Unit) {
-        Observable.create(ObservableOnSubscribe<String> {
+    private fun loadData(episodesUrl: String, onSuccess: (url: TingShuUtil.AudioInfo) -> Unit, onError: (e: Exception) -> Unit) {
+        Observable.create(ObservableOnSubscribe<TingShuUtil.AudioInfo> {
             try {
-                val url = TingShuUtil.getAudioUrl(intent.getStringExtra("url"))
-                it.onNext(url)
+                mAudioInfo = TingShuUtil.getAudioUrl(episodesUrl)
+                it.onNext(mAudioInfo!!)
                 it.onComplete()
-            } catch (e: Error) {
+            } catch (e: Exception) {
                 it.onError(e)
                 onError(e)
             }

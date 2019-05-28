@@ -15,4 +15,37 @@
         android:layout_height="match_parent"
         android:layout_centerInParent="true"/>
 
+    <TextView
+        android:id="@+id/titleTv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="15dp"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:textSize="30sp"
+        tools:text="标题"
+        />
+
+    <Button
+        android:id="@+id/preBt"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="15dp"
+        android:layout_marginBottom="100dp"
+        android:text="上一集"
+        />
+
+    <Button
+        android:id="@+id/nextBt"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="15dp"
+        android:layout_marginBottom="100dp"
+        android:text="下一集"
+        />
+
 </RelativeLayout>

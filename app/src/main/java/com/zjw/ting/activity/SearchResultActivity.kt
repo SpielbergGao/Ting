@@ -76,13 +76,13 @@ class SearchResultActivity : AppCompatActivity() {
     }
 
     @SuppressLint("CheckResult")
-    private fun loadData(page: Long, onSuccess: (list: ArrayList<TingShuUtil.AudioInfo>) -> Unit, onError: (e: Error) -> Unit) {
+    private fun loadData(page: Long, onSuccess: (list: ArrayList<TingShuUtil.AudioInfo>) -> Unit, onError: (e: Exception) -> Unit) {
         Observable.create(ObservableOnSubscribe<ArrayList<TingShuUtil.AudioInfo>> {
             try {
                 val urls = TingShuUtil.getSearchUrls(intent.getStringExtra("keyWord"), page)
                 it.onNext(urls)
                 it.onComplete()
-            } catch (e: Error) {
+            } catch (e: Exception) {
                 it.onError(e)
                 onError(e)
             }

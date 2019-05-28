@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.zjw.ting.R
 import com.zjw.ting.adapter.EposodesAdapter
 import com.zjw.ting.net.TingShuUtil
@@ -32,7 +33,7 @@ class EpisodesActivity : AppCompatActivity() {
             refreshData()
         }
 
-        rv.layoutManager = androidx.recyclerview.widget.GridLayoutManager(this@EpisodesActivity, 4)
+        rv.layoutManager = GridLayoutManager(this@EpisodesActivity, 4)
         adapter = EposodesAdapter(audioInfos, this@EpisodesActivity)
         rv.adapter = adapter
         adapter.onItemClickListener = object : EposodesAdapter.OnItemClickListener {
@@ -40,7 +41,8 @@ class EpisodesActivity : AppCompatActivity() {
                 //跳转到播放页面
                 val intent = Intent(this@EpisodesActivity, AudioPlayActivity::class.java)
                 intent.putExtra("url", item.url)
-                intent.putExtra("info", getIntent().getStringExtra("info") +"======"+ item.info)
+                intent.putExtra("position", position + 1)
+                intent.putExtra("info", getIntent().getStringExtra("info"))
                 startActivity(intent)
             }
         }
@@ -61,13 +63,13 @@ class EpisodesActivity : AppCompatActivity() {
     }
 
     @SuppressLint("CheckResult")
-    private fun loadData(onSuccess: (list: ArrayList<TingShuUtil.AudioInfo>) -> Unit, onError: (e: Error) -> Unit) {
+    private fun loadData(onSuccess: (list: ArrayList<TingShuUtil.AudioInfo>) -> Unit, onError: (e: Exception) -> Unit) {
         Observable.create(ObservableOnSubscribe<ArrayList<TingShuUtil.AudioInfo>> {
             try {
                 val urls = TingShuUtil.getEpisodesUrls(intent.getStringExtra("url"))
                 it.onNext(urls)
                 it.onComplete()
-            } catch (e: Error) {
+            } catch (e: Exception) {
                 it.onError(e)
                 onError(e)
             }

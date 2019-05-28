@@ -7,6 +7,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
@@ -89,10 +90,17 @@ public class TingShuUtil {
      * @return
      * @throws IOException
      */
-    public static String getAudioUrl(String url) throws IOException {
+    public static AudioInfo getAudioUrl(String url) throws IOException {
+        AudioInfo audioInfo = new AudioInfo(url);
         final Connection connection = Jsoup.connect(url);
         setCommonHeader(connection);
         final Document doc = connection.get();
+
+        //获取上下集的html
+        Element preUrlElment = doc.select("a:contains(上一集)").first();
+        audioInfo.setPreUrl(httpHost + preUrlElment.attr("href"));
+        Element nextUrlElment = doc.select("a:contains(下一集)").first();
+        audioInfo.setNextUrl(httpHost + nextUrlElment.attr("href"));
 
         Element frame = doc.select("iframe[src*=play]").first();
         String src = frame.attr("src");
@@ -107,7 +115,8 @@ public class TingShuUtil {
         String text = scriptElement.toString();
 
         StringBuffer audioStr = getAudioUrlFromText(text);
-        return audioStr.toString();
+        audioInfo.setUrl(audioStr.toString());
+        return audioInfo;
     }
 
     private static StringBuffer getAudioUrlFromText(String text) {
@@ -157,14 +166,42 @@ public class TingShuUtil {
         connect.header("upgrade-insecure-requests", "1");
     }
 
-    public static class AudioInfo {
+    public static class AudioInfo implements Serializable {
         private String info;
         private String url;
+        private String preUrl;
+        private String nextUrl;
 
+        public AudioInfo(String url) {
+            this.url = url;
+        }
 
         public AudioInfo(String info, String url) {
             this.info = info;
             this.url = url;
+        }
+
+        public AudioInfo(String info, String url, String preUrl, String nextUrl) {
+            this.info = info;
+            this.url = url;
+            this.preUrl = preUrl;
+            this.nextUrl = nextUrl;
+        }
+
+        public String getPreUrl() {
+            return preUrl;
+        }
+
+        public void setPreUrl(String preUrl) {
+            this.preUrl = preUrl;
+        }
+
+        public String getNextUrl() {
+            return nextUrl;
+        }
+
+        public void setNextUrl(String nextUrl) {
+            this.nextUrl = nextUrl;
         }
 
         public String getInfo() {
@@ -188,6 +225,8 @@ public class TingShuUtil {
             return "AudioInfo{" +
                     "info='" + info + '\'' +
                     ", url='" + url + '\'' +
+                    ", preUrl='" + preUrl + '\'' +
+                    ", nextUrl='" + nextUrl + '\'' +
                     '}';
         }
     }
