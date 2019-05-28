@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import com.trello.rxlifecycle3.android.lifecycle.kotlin.bindUntilEvent
 import com.zjw.ting.R
 import com.zjw.ting.adapter.SearchResultAdapter
 import com.zjw.ting.net.TingShuUtil
@@ -14,7 +17,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_search_result.*
 
-class SearchResultActivity : AppCompatActivity() {
+class SearchResultActivity : AppCompatActivity(), LifecycleOwner {
 
     private val audioInfos = ArrayList<TingShuUtil.AudioInfo>()
     private lateinit var adapter: SearchResultAdapter
@@ -76,20 +79,22 @@ class SearchResultActivity : AppCompatActivity() {
     }
 
     @SuppressLint("CheckResult")
-    private fun loadData(page: Long, onSuccess: (list: ArrayList<TingShuUtil.AudioInfo>) -> Unit, onError: (e: Exception) -> Unit) {
+    private fun loadData(page: Long, onSuccess: (list: ArrayList<TingShuUtil.AudioInfo>) -> Unit, onError: (e: Throwable) -> Unit) {
         Observable.create(ObservableOnSubscribe<ArrayList<TingShuUtil.AudioInfo>> {
             try {
                 val urls = TingShuUtil.getSearchUrls(intent.getStringExtra("keyWord"), page)
                 it.onNext(urls)
                 it.onComplete()
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 it.onError(e)
-                onError(e)
             }
         }).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
+            .bindUntilEvent(this@SearchResultActivity, Lifecycle.Event.ON_DESTROY)
+            .subscribe({
                 onSuccess(it)
-            }
+            }, {
+                onError(it)
+            })
     }
 }

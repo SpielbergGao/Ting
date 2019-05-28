@@ -50,7 +50,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.1.0-alpha04'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.1'
@@ -71,9 +71,7 @@ dependencies {
     implementation 'com.github.wshychbydh:permission:1.0.3'
 
     implementation 'com.shuyu:GSYVideoPlayer:7.0.1'
-    /*//是否需要ExoPlayer模式
-    implementation 'com.shuyu:GSYVideoPlayer-exo2:7.0.1'
 
-    //更多ijk的编码支持
-    implementation 'com.shuyu:gsyVideoPlayer-ex_so:7.0.1'*/
+    // If you want to use Kotlin syntax with Android Lifecycle
+    implementation 'com.trello.rxlifecycle3:rxlifecycle-android-lifecycle-kotlin:3.0.0'
 }

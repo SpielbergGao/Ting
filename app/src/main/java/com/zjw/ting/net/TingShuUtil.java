@@ -1,5 +1,7 @@
 package com.zjw.ting.net;
 
+import android.util.Log;
+
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -105,6 +107,7 @@ public class TingShuUtil {
         Element frame = doc.select("iframe[src*=play]").first();
         String src = frame.attr("src");
         String relHref = httpHost + src;
+        Log.e("tag","relHref "+relHref);
 
         Connection connect = Jsoup.connect(relHref);
         setCommonHeader(connect);
@@ -157,23 +160,32 @@ public class TingShuUtil {
     }
 
     private static void setCommonHeader(Connection connect) {
+        /*Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
+        final String format = dateFormat.format(date.getTime());
+        connect.header("if-modified-since", format);*/
+        connect.header("cache-control", "max-age=0");
         connect.header("authority", host);
         connect.header("scheme", "https");
-        connect.header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
+        //connect.header("cookie", "ASPSESSIONIDAWCQBSBB=PMAAPIHCAHGKNCGENGPIEPAK; startime=1");
+        //connect.header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
+        connect.header("User-Agent", "Mozilla/5.0 (Linux; U; Android 8.1.0; zh-cn; BLA-AL00 Build/HUAWEIBLA-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/8.9 Mobile Safari/537.36");
         connect.header("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
         connect.header("accept-encoding", "gzip, deflate, br");
         connect.header("accept-language", "zh-CN,zh;q=0.9,en;q=0.8");
         connect.header("upgrade-insecure-requests", "1");
+        //connect.header("Referrer Policy", "no-referrer-when-downgrade");
     }
 
     public static class AudioInfo implements Serializable {
         private String info;
         private String url;
+        private String episodesUrl;
         private String preUrl;
         private String nextUrl;
 
-        public AudioInfo(String url) {
-            this.url = url;
+        public AudioInfo(String episodesUrl) {
+            this.episodesUrl = episodesUrl;
         }
 
         public AudioInfo(String info, String url) {
@@ -218,6 +230,14 @@ public class TingShuUtil {
 
         public void setUrl(String url) {
             this.url = url;
+        }
+
+        public String getEpisodesUrl() {
+            return episodesUrl;
+        }
+
+        public void setEpisodesUrl(String episodesUrl) {
+            this.episodesUrl = episodesUrl;
         }
 
         @Override

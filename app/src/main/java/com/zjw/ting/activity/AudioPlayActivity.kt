@@ -2,9 +2,13 @@ package com.zjw.ting.activity
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack
+import com.trello.rxlifecycle3.android.lifecycle.kotlin.bindUntilEvent
 import com.zjw.ting.R
 import com.zjw.ting.net.TingShuUtil
 import es.dmoral.toasty.Toasty
@@ -16,10 +20,14 @@ import kotlinx.android.synthetic.main.activity_audio_play.*
 import java.net.URLEncoder
 
 
-class AudioPlayActivity : AppCompatActivity() {
+class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
     private var position: Int = 1
+
+    @Volatile
     private var mAudioInfo: TingShuUtil.AudioInfo? = null
+
+    private var mCurrentUrl: String = ""
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +54,6 @@ class AudioPlayActivity : AppCompatActivity() {
             }
             mAudioInfo?.preUrl?.let { preUrl ->
                 loadData(preUrl, onSuccess = {
-                    GSYVideoManager.releaseAllVideos()
                     position--
                     setTitleAndPlay(it)
                 }, onError = {
@@ -64,7 +71,6 @@ class AudioPlayActivity : AppCompatActivity() {
     private fun playNext() {
         mAudioInfo?.nextUrl?.let { nextUrl ->
             loadData(nextUrl, onSuccess = {
-                GSYVideoManager.releaseAllVideos()
                 position++
                 setTitleAndPlay(it)
             }, onError = {
@@ -75,11 +81,29 @@ class AudioPlayActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun setTitleAndPlay(it: TingShuUtil.AudioInfo) {
-        Toasty.success(this@AudioPlayActivity, "url ${it.url}").show()
-        var url = handleUrl(it.url)
+        GSYVideoManager.releaseAllVideos()
+        Log.e("tag", it.url)
+
+        mCurrentUrl = handleUrl(it.url)
         titleTv.text = intent.getStringExtra("info") + " ===【第 $position 集】"
-        videoPlayer.setUp(url, true, "")
-        videoPlayer.startPlayLogic()
+
+        //无效播放源需要自动重试
+        if (it.url.contains("180k.5txs.com")) {
+            Toasty.warning(this@AudioPlayActivity, "url ${it.url}").show()
+            //原集数html地址
+            mAudioInfo?.episodesUrl?.let { episodesUrl ->
+                loadData(episodesUrl, onSuccess = {
+                    setTitleAndPlay(it)
+                }, onError = {
+                    it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
+                })
+            }
+
+        } else {
+            Toasty.success(this@AudioPlayActivity, "url ${it.url}").show()
+            videoPlayer.setUp(mCurrentUrl, true, "")
+            videoPlayer.startPlayLogic()
+        }
     }
 
     //因为播放器不接受url中带有中文，因此需要做处理
@@ -115,20 +139,22 @@ class AudioPlayActivity : AppCompatActivity() {
     }
 
     @SuppressLint("CheckResult")
-    private fun loadData(episodesUrl: String, onSuccess: (url: TingShuUtil.AudioInfo) -> Unit, onError: (e: Exception) -> Unit) {
+    private fun loadData(episodesUrl: String, onSuccess: (url: TingShuUtil.AudioInfo) -> Unit, onError: (e: Throwable) -> Unit) {
         Observable.create(ObservableOnSubscribe<TingShuUtil.AudioInfo> {
             try {
                 mAudioInfo = TingShuUtil.getAudioUrl(episodesUrl)
                 it.onNext(mAudioInfo!!)
                 it.onComplete()
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 it.onError(e)
-                onError(e)
             }
         }).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
+            .bindUntilEvent(this@AudioPlayActivity, Lifecycle.Event.ON_DESTROY)
+            .subscribe({
                 onSuccess(it)
-            }
+            }, {
+                onError(it)
+            })
     }
 }

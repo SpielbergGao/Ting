@@ -4,8 +4,11 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.trello.rxlifecycle3.android.lifecycle.kotlin.bindUntilEvent
 import com.zjw.ting.R
 import com.zjw.ting.adapter.EposodesAdapter
 import com.zjw.ting.net.TingShuUtil
@@ -17,7 +20,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_episodes.rv
 import kotlinx.android.synthetic.main.activity_search_result.*
 
-class EpisodesActivity : AppCompatActivity() {
+class EpisodesActivity : AppCompatActivity(), LifecycleOwner {
 
     private val audioInfos = ArrayList<TingShuUtil.AudioInfo>()
     private lateinit var adapter: EposodesAdapter
@@ -63,20 +66,23 @@ class EpisodesActivity : AppCompatActivity() {
     }
 
     @SuppressLint("CheckResult")
-    private fun loadData(onSuccess: (list: ArrayList<TingShuUtil.AudioInfo>) -> Unit, onError: (e: Exception) -> Unit) {
+    private fun loadData(onSuccess: (list: ArrayList<TingShuUtil.AudioInfo>) -> Unit, onError: (e: Throwable) -> Unit) {
         Observable.create(ObservableOnSubscribe<ArrayList<TingShuUtil.AudioInfo>> {
             try {
                 val urls = TingShuUtil.getEpisodesUrls(intent.getStringExtra("url"))
                 it.onNext(urls)
                 it.onComplete()
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 it.onError(e)
-                onError(e)
+
             }
         }).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
+            .bindUntilEvent(this@EpisodesActivity, Lifecycle.Event.ON_DESTROY)
+            .subscribe ({
                 onSuccess(it)
-            }
+            },{
+                onError(it)
+            })
     }
 }
