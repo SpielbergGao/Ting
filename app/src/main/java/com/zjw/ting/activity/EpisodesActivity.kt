@@ -40,6 +40,7 @@ class EpisodesActivity : AppCompatActivity() {
                 //跳转到播放页面
                 val intent = Intent(this@EpisodesActivity, AudioPlayActivity::class.java)
                 intent.putExtra("url", item.url)
+                intent.putExtra("info", getIntent().getStringExtra("info") +"======"+ item.info)
                 startActivity(intent)
             }
         }

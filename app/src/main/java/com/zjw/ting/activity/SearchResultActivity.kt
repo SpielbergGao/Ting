@@ -54,6 +54,7 @@ class SearchResultActivity : AppCompatActivity() {
                 //跳转到集数页面
                 val intent = Intent(this@SearchResultActivity, EpisodesActivity::class.java)
                 intent.putExtra("url", item.url)
+                intent.putExtra("info", item.info)
                 startActivity(intent)
             }
         }

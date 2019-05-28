@@ -29,10 +29,9 @@ class AudioPlayActivity : AppCompatActivity() {
         // videoPlayer.setUp("http://9890.vod.myqcloud.com/9890_4e292f9a3dd011e6b4078980237cc3d3.f20.mp4", true, "测试视频");
         // var url = "http://180l.ysts8.com:8000/恐怖小说/我当算命先生那些年/014.mp3?1231710044742x1558968690x1231716175402-f002e814b9d51c55addf150d702074fc?3"
         loadData(onSuccess = {
-            Log.e("tag", "" + it)
             var url = handleUrl(it)
-            Toasty.success(this@AudioPlayActivity, "get url $it").show()
-            videoPlayer.setUp(url, true, "测试视频")
+            Toasty.success(this@AudioPlayActivity, "url $it").show()
+            videoPlayer.setUp(url, true, intent.getStringExtra("info"))
             videoPlayer.startPlayLogic()
         }, onError = {
             it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
