@@ -87,10 +87,10 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             .build()
         nextBt.background = nextBtDrawable
         nextBt.setOnClickListener {
-            if (TingShuUtil.countPage > 0 && (position >= TingShuUtil.countPage)) {
+            /*if (TingShuUtil.countPage > 0 && (position >= TingShuUtil.countPage)) {
                 Toasty.info(this, "没有下一集哟~").show()
                 return@setOnClickListener
-            }
+            }*/
             playNext()
         }
     }
