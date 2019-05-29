@@ -39,6 +39,8 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
     private var canChangeUrl = true
 
+    private var episodesUrl: String = ""
+
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +49,8 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         // videoPlayer.setUp("http://9890.vod.myqcloud.com/9890_4e292f9a3dd011e6b4078980237cc3d3.f20.mp4", true, "测试视频");
         // var url = "http://180l.ysts8.com:8000/恐怖小说/我当算命先生那些年/014.mp3?1231710044742x1558968690x1231716175402-f002e814b9d51c55addf150d702074fc?3"
         position = intent.getIntExtra("position", 1)
-        loadData(intent.getStringExtra("url"), onSuccess = {
+        episodesUrl = intent.getStringExtra("url")
+        loadData(episodesUrl, onSuccess = {
             setTitleAndPlay(it, true)
             videoPlayer.setVideoAllCallBack(object : GSYSampleCallBack() {
                 override fun onAutoComplete(url: String?, vararg objects: Any?) {
@@ -76,7 +79,10 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             }
             mAudioInfo?.preUrl?.let { preUrl ->
                 loadData(preUrl, onSuccess = {
-                    setTitleAndPlay(it, false) { position-- }
+                    setTitleAndPlay(it, false) {
+                        position--
+                        episodesUrl = preUrl
+                    }
                 }, onError = {
                     it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
                 })
@@ -108,7 +114,10 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     private fun playNext() {
         mAudioInfo?.nextUrl?.let { nextUrl ->
             loadData(nextUrl, onSuccess = {
-                setTitleAndPlay(it, false) { position++ }
+                setTitleAndPlay(it, false) {
+                    position++
+                    episodesUrl = nextUrl
+                }
             }, onError = {
                 it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
             })
@@ -198,7 +207,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
                 getTitleStr(),
                 videoPlayer.gsyVideoManager.currentPosition,
                 intent.getStringExtra("bookUrl"),
-                intent.getStringExtra("url"),
+                episodesUrl,
                 position
             )
         ACache.get(this).put("history", history)
