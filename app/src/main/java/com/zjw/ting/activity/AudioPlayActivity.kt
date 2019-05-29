@@ -1,8 +1,6 @@
 package com.zjw.ting.activity
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +24,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_audio_play.*
 import top.defaults.drawabletoolbox.DrawableBuilder
 import java.net.URLEncoder
+import java.util.regex.Pattern
 
 
 class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
@@ -80,7 +79,6 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             mAudioInfo?.preUrl?.let { preUrl ->
                 loadData(preUrl, onSuccess = {
                     setTitleAndPlay(it, false) {
-                        position--
                         episodesUrl = preUrl
                     }
                 }, onError = {
@@ -115,7 +113,6 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         mAudioInfo?.nextUrl?.let { nextUrl ->
             loadData(nextUrl, onSuccess = {
                 setTitleAndPlay(it, false) {
-                    position++
                     episodesUrl = nextUrl
                 }
             }, onError = {
@@ -130,7 +127,10 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         if (this.isFinishing || this.isDestroyed) {
             return
         }
+
+        titleTv.text = getTitleStr()
         Log.e("tag", it.url)
+
 
         mCurrentUrl = handleUrl(it.url)
 
@@ -149,6 +149,11 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
         } else {
             canChangeUrl = true
+            var p = Pattern.compile("\\d+\\.mp3")
+            var m = p.matcher(it.url)
+            if (m.find()) {
+                position = m.group(0).replace(".mp3", "").toInt()
+            }
             onSuccess()
             titleTv.text = getTitleStr()
             Toasty.success(this@AudioPlayActivity, "url ${it.url}").show()
@@ -241,9 +246,6 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     override fun finish() {
         //记录当前播放进度
         setAudioHistory()
-        var data = Intent()
-        data.putExtra("bookUrl", intent.getStringExtra("bookUrl"))
-        setResult(Activity.RESULT_OK, data);
         // 发送 String 类型事件
         RxBus.getDefault().post(intent.getStringExtra("bookUrl"))
         super.finish()
