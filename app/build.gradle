@@ -70,7 +70,9 @@ dependencies {
     implementation 'com.github.GrenderG:Toasty:1.4.2'
     implementation 'com.github.wshychbydh:permission:1.0.3'
 
-    implementation 'com.shuyu:GSYVideoPlayer:7.0.1'
+    implementation 'com.shuyu:gsyVideoPlayer-java:7.0.1'
+    implementation 'com.shuyu:gsyVideoPlayer-armv7a:7.0.1'
+    implementation 'com.shuyu:gsyVideoPlayer-x64:7.0.1'
 
     // If you want to use Kotlin syntax with Android Lifecycle
     implementation 'com.trello.rxlifecycle3:rxlifecycle-android-lifecycle-kotlin:3.0.0'
