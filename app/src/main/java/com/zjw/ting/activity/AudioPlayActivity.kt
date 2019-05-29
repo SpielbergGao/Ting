@@ -76,8 +76,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             }
             mAudioInfo?.preUrl?.let { preUrl ->
                 loadData(preUrl, onSuccess = {
-                    position--
-                    setTitleAndPlay(it, false)
+                    setTitleAndPlay(it, false) { position-- }
                 }, onError = {
                     it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
                 })
@@ -109,8 +108,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     private fun playNext() {
         mAudioInfo?.nextUrl?.let { nextUrl ->
             loadData(nextUrl, onSuccess = {
-                position++
-                setTitleAndPlay(it, false)
+                setTitleAndPlay(it, false) { position++ }
             }, onError = {
                 it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
             })
@@ -118,7 +116,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun setTitleAndPlay(it: TingShuUtil.AudioInfo, needSeekTo: Boolean) {
+    private fun setTitleAndPlay(it: TingShuUtil.AudioInfo, needSeekTo: Boolean, onSuccess: () -> Unit = {}) {
         GSYVideoManager.releaseAllVideos()
         if (this.isFinishing || this.isDestroyed) {
             return
@@ -126,7 +124,6 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         Log.e("tag", it.url)
 
         mCurrentUrl = handleUrl(it.url)
-        titleTv.text = getTitleStr()
 
         //无效播放源需要自动重试
         if (it.url.contains("180k.5txs.com")) {
@@ -143,6 +140,8 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
         } else {
             canChangeUrl = true
+            titleTv.text = getTitleStr()
+            onSuccess()
             Toasty.success(this@AudioPlayActivity, "url ${it.url}").show()
             videoPlayer.setUp(mCurrentUrl, true, "")
             if (needSeekTo) {
