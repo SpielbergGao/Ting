@@ -10,6 +10,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.blankj.rxbus.RxBus
 import com.trello.rxlifecycle3.android.lifecycle.kotlin.bindUntilEvent
 import com.zjw.ting.R
 import com.zjw.ting.adapter.EposodesAdapter
@@ -58,9 +59,17 @@ class EpisodesActivity : AppCompatActivity(), LifecycleOwner {
                 intent.putExtra("position", position + 1)
                 intent.putExtra("bookUrl", getIntent().getStringExtra("url"))
                 intent.putExtra("info", getIntent().getStringExtra("info"))
-                startActivityForResult(intent, code)
+                //startActivityForResult(intent, code)
+                startActivity(intent)
             }
         }
+
+        // 注册 String 类型事件
+        RxBus.getDefault().subscribeSticky(this, object : RxBus.Callback<String>() {
+            override fun onEvent(s: String) {
+                setHistoryUi()
+            }
+        })
     }
 
     @SuppressLint("SetTextI18n")
@@ -82,7 +91,8 @@ class EpisodesActivity : AppCompatActivity(), LifecycleOwner {
                     intent.putExtra("currentPosition", audioHistory.currentPosition)
                     intent.putExtra("bookUrl", getIntent().getStringExtra("url"))
                     intent.putExtra("info", getIntent().getStringExtra("info"))
-                    startActivityForResult(intent, code)
+                    //startActivityForResult(intent, code)
+                    startActivity(intent)
                 }
             }
         }
@@ -123,7 +133,7 @@ class EpisodesActivity : AppCompatActivity(), LifecycleOwner {
             })
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == code) {
             val bookUrl = data?.extras?.getString("bookUrl")
@@ -133,5 +143,11 @@ class EpisodesActivity : AppCompatActivity(), LifecycleOwner {
                 }
             }
         }
+    }*/
+
+    override fun onDestroy() {
+        // 注销
+        RxBus.getDefault().unregister(this)
+        super.onDestroy()
     }
 }
