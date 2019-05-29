@@ -48,7 +48,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         // var url = "http://180l.ysts8.com:8000/恐怖小说/我当算命先生那些年/014.mp3?1231710044742x1558968690x1231716175402-f002e814b9d51c55addf150d702074fc?3"
         position = intent.getIntExtra("position", 1)
         loadData(intent.getStringExtra("url"), onSuccess = {
-            setTitleAndPlay(it)
+            setTitleAndPlay(it, true)
             videoPlayer.setVideoAllCallBack(object : GSYSampleCallBack() {
                 override fun onAutoComplete(url: String?, vararg objects: Any?) {
                     playNext()
@@ -77,7 +77,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             mAudioInfo?.preUrl?.let { preUrl ->
                 loadData(preUrl, onSuccess = {
                     position--
-                    setTitleAndPlay(it)
+                    setTitleAndPlay(it, false)
                 }, onError = {
                     it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
                 })
@@ -110,7 +110,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         mAudioInfo?.nextUrl?.let { nextUrl ->
             loadData(nextUrl, onSuccess = {
                 position++
-                setTitleAndPlay(it)
+                setTitleAndPlay(it, false)
             }, onError = {
                 it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
             })
@@ -118,7 +118,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun setTitleAndPlay(it: TingShuUtil.AudioInfo) {
+    private fun setTitleAndPlay(it: TingShuUtil.AudioInfo, needSeekTo: Boolean) {
         GSYVideoManager.releaseAllVideos()
         if (this.isFinishing || this.isDestroyed) {
             return
@@ -135,7 +135,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             //原集数html地址
             mAudioInfo?.episodesUrl?.let { episodesUrl ->
                 loadData(episodesUrl, onSuccess = {
-                    setTitleAndPlay(it)
+                    setTitleAndPlay(it, needSeekTo)
                 }, onError = {
                     it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
                 })
@@ -145,7 +145,11 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             canChangeUrl = true
             Toasty.success(this@AudioPlayActivity, "url ${it.url}").show()
             videoPlayer.setUp(mCurrentUrl, true, "")
-            videoPlayer.seekOnStart = intent.getLongExtra("currentPosition", 0)
+            if (needSeekTo) {
+                videoPlayer.seekOnStart = intent.getLongExtra("currentPosition", 0)
+            } else {
+                videoPlayer.seekOnStart = 0
+            }
             videoPlayer.startPlayLogic()
         }
     }
