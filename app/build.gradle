@@ -74,4 +74,6 @@ dependencies {
 
     // If you want to use Kotlin syntax with Android Lifecycle
     implementation 'com.trello.rxlifecycle3:rxlifecycle-android-lifecycle-kotlin:3.0.0'
+
+    implementation 'com.github.duanhong169:drawabletoolbox:1.0.7'
 }

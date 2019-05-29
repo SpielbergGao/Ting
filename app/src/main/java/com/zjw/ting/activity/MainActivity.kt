@@ -7,12 +7,14 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.text.TextUtils
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import com.eye.cool.permission.PermissionHelper
 import com.tangguna.searchbox.library.cache.HistoryCache
 import com.tangguna.searchbox.library.callback.onSearchCallBackListener
 import com.zjw.ting.R
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_main.*
+import top.defaults.drawabletoolbox.DrawableBuilder
 
 class MainActivity : AppCompatActivity() {
 
@@ -70,5 +72,19 @@ class MainActivity : AppCompatActivity() {
                 HistoryCache.clear(applicationContext)
             }
         }, 1)
+
+
+        val nextBtDrawable = DrawableBuilder()
+            .rectangle()
+            .rounded()
+            .solidColor(ContextCompat.getColor(this, R.color.colorPrimary))
+            .solidColorPressed(ContextCompat.getColor(this, R.color.colorPrimaryDark))
+            .build()
+        bt.background = nextBtDrawable
+        bt.setOnClickListener {
+            //跳转页面
+            //val intent = Intent(this@MainActivity, SearchResultActivity::class.java)
+            //startActivity(intent)
+        }
     }
 }

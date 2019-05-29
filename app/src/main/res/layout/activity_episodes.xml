@@ -5,7 +5,33 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".activity.EpisodesActivity">
+
+
+    <TextView
+        android:id="@+id/historyTv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
+        android:gravity="center"
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp"
+        android:textColor="@android:color/black"
+        android:textSize="20sp"
+        android:visibility="gone"
+        tools:text="上次记录：官方救世主 第【1】集"
+        tools:visibility="visible"
+        />
+
+    <View
+        android:id="@+id/line"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@android:color/darker_gray"
+        android:visibility="gone"
+        tools:visibility="visible"
+        />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeLayout"

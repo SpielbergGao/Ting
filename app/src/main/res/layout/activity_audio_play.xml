@@ -35,6 +35,7 @@
         android:layout_marginLeft="15dp"
         android:layout_marginBottom="100dp"
         android:text="上一集"
+        android:textColor="@android:color/white"
         />
 
     <Button
@@ -46,6 +47,7 @@
         android:layout_marginRight="15dp"
         android:layout_marginBottom="100dp"
         android:text="下一集"
+        android:textColor="@android:color/white"
         />
 
 </RelativeLayout>

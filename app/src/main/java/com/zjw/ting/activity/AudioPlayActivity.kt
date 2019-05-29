@@ -1,22 +1,29 @@
 package com.zjw.ting.activity
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack
 import com.trello.rxlifecycle3.android.lifecycle.kotlin.bindUntilEvent
 import com.zjw.ting.R
+import com.zjw.ting.bean.AudioHistory
+import com.zjw.ting.bean.AudioHistorys
 import com.zjw.ting.net.TingShuUtil
+import com.zjw.ting.util.ACache
 import es.dmoral.toasty.Toasty
 import io.reactivex.Observable
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_audio_play.*
+import top.defaults.drawabletoolbox.DrawableBuilder
 import java.net.URLEncoder
 
 
@@ -48,8 +55,16 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
         })
 
+        val preBtDrawable = DrawableBuilder()
+            .rectangle()
+            .rounded()
+            .solidColor(ContextCompat.getColor(this, R.color.colorPrimary))
+            .solidColorPressed(ContextCompat.getColor(this, R.color.colorPrimaryDark))
+            .build()
+        preBt.background = preBtDrawable
         preBt.setOnClickListener {
             if (position <= 1) {
+                Toasty.info(this, "没有上一集哟~").show()
                 return@setOnClickListener
             }
             mAudioInfo?.preUrl?.let { preUrl ->
@@ -62,7 +77,19 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             }
         }
 
+
+        val nextBtDrawable = DrawableBuilder()
+            .rectangle()
+            .rounded()
+            .solidColor(ContextCompat.getColor(this, R.color.colorPrimary))
+            .solidColorPressed(ContextCompat.getColor(this, R.color.colorPrimaryDark))
+            .build()
+        nextBt.background = nextBtDrawable
         nextBt.setOnClickListener {
+            if (TingShuUtil.countPage > 0 && (position >= TingShuUtil.countPage)) {
+                Toasty.info(this, "没有下一集哟~").show()
+                return@setOnClickListener
+            }
             playNext()
         }
     }
@@ -82,10 +109,13 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     @SuppressLint("SetTextI18n")
     private fun setTitleAndPlay(it: TingShuUtil.AudioInfo) {
         GSYVideoManager.releaseAllVideos()
+        if (this.isFinishing || this.isDestroyed) {
+            return
+        }
         Log.e("tag", it.url)
 
         mCurrentUrl = handleUrl(it.url)
-        titleTv.text = intent.getStringExtra("info") + " ===【第 $position 集】"
+        titleTv.text = getTitleStr()
 
         //无效播放源需要自动重试
         if (it.url.contains("180k.5txs.com")) {
@@ -102,9 +132,12 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         } else {
             Toasty.success(this@AudioPlayActivity, "url ${it.url}").show()
             videoPlayer.setUp(mCurrentUrl, true, "")
+            videoPlayer.seekOnStart = intent.getLongExtra("currentPosition", 0)
             videoPlayer.startPlayLogic()
         }
     }
+
+    private fun getTitleStr(): String = intent.getStringExtra("info") + " ===【第 $position 集】"
 
     //因为播放器不接受url中带有中文，因此需要做处理
     private fun handleUrl(url: String): String {
@@ -134,27 +167,52 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
 
     override fun onDestroy() {
-        super.onDestroy()
         GSYVideoManager.releaseAllVideos()
+        super.onDestroy()
+    }
+
+    private fun setAudioHistory() {
+        var history = ACache.get(this).getAsObject("history")
+        if (history == null) {
+            history = AudioHistorys()
+        }
+        history as AudioHistorys
+        history.map[intent.getStringExtra("bookUrl")] =
+            AudioHistory(getTitleStr(), videoPlayer.gsyVideoManager.currentPosition, intent.getStringExtra("url"), position)
+        ACache.get(this).put("history", history)
     }
 
     @SuppressLint("CheckResult")
     private fun loadData(episodesUrl: String, onSuccess: (url: TingShuUtil.AudioInfo) -> Unit, onError: (e: Throwable) -> Unit) {
         Observable.create(ObservableOnSubscribe<TingShuUtil.AudioInfo> {
             try {
-                mAudioInfo = TingShuUtil.getAudioUrl(episodesUrl)
-                it.onNext(mAudioInfo!!)
-                it.onComplete()
+                if (!this.isFinishing && !this.isDestroyed) {
+                    mAudioInfo = TingShuUtil.getAudioUrl(episodesUrl)
+                    it.onNext(mAudioInfo!!)
+                    it.onComplete()
+                }
             } catch (e: Throwable) {
-                it.onError(e)
+                try {
+                    it.onError(e)
+                } catch (e: Throwable) {
+                }
             }
         }).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .bindUntilEvent(this@AudioPlayActivity, Lifecycle.Event.ON_DESTROY)
+            .bindUntilEvent(this@AudioPlayActivity, Lifecycle.Event.ON_STOP)
             .subscribe({
                 onSuccess(it)
             }, {
                 onError(it)
             })
+    }
+
+    override fun finish() {
+        //记录当前播放进度
+        setAudioHistory()
+        var data = Intent()
+        data.putExtra("bookUrl", intent.getStringExtra("bookUrl"))
+        setResult(Activity.RESULT_OK, data);
+        super.finish()
     }
 }

@@ -28,29 +28,33 @@ public class TingShuUtil {
      * @return
      * @throws IOException
      */
-    public static ArrayList<AudioInfo> getSearchUrls(String keyWord, long page) throws IOException {
+    public static ArrayList<AudioInfo> getSearchUrls(String keyWord, long page) throws Throwable {
         ArrayList<AudioInfo> audioInfos = new ArrayList<>();
         String keyParam = URLEncoder.encode(keyWord, "GB2312");
         String pageParam = page > 0 ? "&page=" + page : "";
-        final Connection connection = Jsoup.connect(httpHost + searchUrl + keyParam + pageParam);
-        setCommonHeader(connection);
-        connection.header("path", searchUrl + keyParam + pageParam);
-        connection.header("referer", httpHost + "/");
-        final Document doc = connection.get();
+        try {
+            final Connection connection = Jsoup.connect(httpHost + searchUrl + keyParam + pageParam);
+            setCommonHeader(connection);
+            connection.header("path", searchUrl + keyParam + pageParam);
+            connection.header("referer", httpHost + "/");
+            final Document doc = connection.get();
 
-        //获取总页数
-        Element countPageElement = doc.select("b:contains(共)").first();
-        String countPageStr = countPageElement.childNode(0).toString().trim().split("/")[1].replace("页", "");
-        countPage = Long.parseLong(countPageStr);
-        //System.out.println("总页数 " + countPage);
-        //获取当前页播放列表url集合
-        //jsoup select用法参考https://www.cnblogs.com/yueshutong/p/9381530.html
-        Element listDiv = doc.select("div.pingshu_ysts8").first();
-        Elements urlListElements = listDiv.select("a[href]");
-        for (Element urlListElement : urlListElements) {
-            //名称 状态
-            //urlListElement.text() 代表该节点的内容文本以及其嵌套的子节点的内容文本
-            audioInfos.add(new AudioInfo(urlListElement.text().trim(), httpHost + urlListElement.attr("href")));
+            //获取总页数
+            Element countPageElement = doc.select("b:contains(共)").first();
+            String countPageStr = countPageElement.childNode(0).toString().trim().split("/")[1].replace("页", "");
+            countPage = Long.parseLong(countPageStr);
+            //System.out.println("总页数 " + countPage);
+            //获取当前页播放列表url集合
+            //jsoup select用法参考https://www.cnblogs.com/yueshutong/p/9381530.html
+            Element listDiv = doc.select("div.pingshu_ysts8").first();
+            Elements urlListElements = listDiv.select("a[href]");
+            for (Element urlListElement : urlListElements) {
+                //名称 状态
+                //urlListElement.text() 代表该节点的内容文本以及其嵌套的子节点的内容文本
+                audioInfos.add(new AudioInfo(urlListElement.text().trim(), httpHost + urlListElement.attr("href")));
+            }
+        } catch (Throwable throwable) {
+            throw throwable;
         }
         //System.out.println(audioInfos);
         return audioInfos;
@@ -64,22 +68,25 @@ public class TingShuUtil {
      * @return
      * @throws IOException
      */
-    public static ArrayList<AudioInfo> getEpisodesUrls(String url) throws IOException {
+    public static ArrayList<AudioInfo> getEpisodesUrls(String url) throws Throwable {
         ArrayList<AudioInfo> audioInfos = new ArrayList<>();
+        try {
+            final Connection connection = Jsoup.connect(url);
+            setCommonHeader(connection);
+            // connection.header("path", searchUrl + keyParam + pageParam);
+            //  connection.header("referer", httpHost + "/");
+            final Document doc = connection.get();
 
-        final Connection connection = Jsoup.connect(url);
-        setCommonHeader(connection);
-        // connection.header("path", searchUrl + keyParam + pageParam);
-        //  connection.header("referer", httpHost + "/");
-        final Document doc = connection.get();
-
-        Element listDiv = doc.select("div.ny_l").first();
-        Elements urlListElements = listDiv.select("a[href]");
-        for (Element urlListElement : urlListElements) {
-            //<a href="/play_16702_55_1_1.html" title="001.mp3">[第001集]</a>
-            if (urlListElement.outerHtml().contains("集")) {
-                audioInfos.add(new AudioInfo(urlListElement.text().trim(), httpHost + urlListElement.attr("href")));
+            Element listDiv = doc.select("div.ny_l").first();
+            Elements urlListElements = listDiv.select("a[href]");
+            for (Element urlListElement : urlListElements) {
+                //<a href="/play_16702_55_1_1.html" title="001.mp3">[第001集]</a>
+                if (urlListElement.outerHtml().contains("集")) {
+                    audioInfos.add(new AudioInfo(urlListElement.text().trim(), httpHost + urlListElement.attr("href")));
+                }
             }
+        } catch (Throwable throwable) {
+            throw throwable;
         }
         //System.out.println(audioInfos);
         return audioInfos;
@@ -92,33 +99,37 @@ public class TingShuUtil {
      * @return
      * @throws IOException
      */
-    public static AudioInfo getAudioUrl(String url) throws IOException {
+    public static AudioInfo getAudioUrl(String url) throws Throwable {
         AudioInfo audioInfo = new AudioInfo(url);
-        final Connection connection = Jsoup.connect(url);
-        setCommonHeader(connection);
-        final Document doc = connection.get();
+        try {
+            final Connection connection = Jsoup.connect(url);
+            setCommonHeader(connection);
+            final Document doc = connection.get();
 
-        //获取上下集的html
-        Element preUrlElment = doc.select("a:contains(上一集)").first();
-        audioInfo.setPreUrl(httpHost + preUrlElment.attr("href"));
-        Element nextUrlElment = doc.select("a:contains(下一集)").first();
-        audioInfo.setNextUrl(httpHost + nextUrlElment.attr("href"));
+            //获取上下集的html
+            Element preUrlElment = doc.select("a:contains(上一集)").first();
+            audioInfo.setPreUrl(httpHost + preUrlElment.attr("href"));
+            Element nextUrlElment = doc.select("a:contains(下一集)").first();
+            audioInfo.setNextUrl(httpHost + nextUrlElment.attr("href"));
 
-        Element frame = doc.select("iframe[src*=play]").first();
-        String src = frame.attr("src");
-        String relHref = httpHost + src;
-        Log.e("tag","relHref "+relHref);
+            Element frame = doc.select("iframe[src*=play]").first();
+            String src = frame.attr("src");
+            String relHref = httpHost + src;
+            Log.e("tag", "relHref " + relHref);
 
-        Connection connect = Jsoup.connect(relHref);
-        setCommonHeader(connect);
-        connect.header("path", src);
-        connect.header("referer", url);
-        Document iframeDoc = connect.get();
-        Element scriptElement = iframeDoc.select("script:containsData(var )").first();
-        String text = scriptElement.toString();
+            Connection connect = Jsoup.connect(relHref);
+            setCommonHeader(connect);
+            connect.header("path", src);
+            connect.header("referer", url);
+            Document iframeDoc = connect.get();
+            Element scriptElement = iframeDoc.select("script:containsData(var )").first();
+            String text = scriptElement.toString();
 
-        StringBuffer audioStr = getAudioUrlFromText(text);
-        audioInfo.setUrl(audioStr.toString());
+            StringBuffer audioStr = getAudioUrlFromText(text);
+            audioInfo.setUrl(audioStr.toString());
+        } catch (Throwable throwable) {
+            throw throwable;
+        }
         return audioInfo;
     }
 
