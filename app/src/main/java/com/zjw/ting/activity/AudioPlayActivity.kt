@@ -37,6 +37,8 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
     private var mCurrentUrl: String = ""
 
+    private var canChangeUrl = true
+
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +70,10 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
                 Toasty.info(this, "没有上一集哟~").show()
                 return@setOnClickListener
             }
+            if (!canChangeUrl) {
+                Toasty.info(this@AudioPlayActivity, "重试获取资源中，无法切换集数~").show()
+                return@setOnClickListener
+            }
             mAudioInfo?.preUrl?.let { preUrl ->
                 loadData(preUrl, onSuccess = {
                     position--
@@ -87,6 +93,10 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             .build()
         nextBt.background = nextBtDrawable
         nextBt.setOnClickListener {
+            if (!canChangeUrl) {
+                Toasty.info(this@AudioPlayActivity, "重试获取资源中，无法切换集数~").show()
+                return@setOnClickListener
+            }
             /*if (TingShuUtil.countPage > 0 && (position >= TingShuUtil.countPage)) {
                 Toasty.info(this, "没有下一集哟~").show()
                 return@setOnClickListener
@@ -120,6 +130,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
         //无效播放源需要自动重试
         if (it.url.contains("180k.5txs.com")) {
+            canChangeUrl = false
             Toasty.warning(this@AudioPlayActivity, "url ${it.url}").show()
             //原集数html地址
             mAudioInfo?.episodesUrl?.let { episodesUrl ->
@@ -131,6 +142,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             }
 
         } else {
+            canChangeUrl = true
             Toasty.success(this@AudioPlayActivity, "url ${it.url}").show()
             videoPlayer.setUp(mCurrentUrl, true, "")
             videoPlayer.seekOnStart = intent.getLongExtra("currentPosition", 0)
