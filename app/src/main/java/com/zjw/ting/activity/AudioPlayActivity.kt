@@ -140,8 +140,8 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
         } else {
             canChangeUrl = true
-            titleTv.text = getTitleStr()
             onSuccess()
+            titleTv.text = getTitleStr()
             Toasty.success(this@AudioPlayActivity, "url ${it.url}").show()
             videoPlayer.setUp(mCurrentUrl, true, "")
             if (needSeekTo) {
