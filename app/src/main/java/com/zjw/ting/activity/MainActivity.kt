@@ -4,9 +4,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.text.TextUtils
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.eye.cool.permission.PermissionHelper
 import com.tangguna.searchbox.library.cache.HistoryCache
@@ -46,21 +46,21 @@ class MainActivity : AppCompatActivity() {
         val skillHots = arrayListOf<String>("我当算命先生那几年", "官方救世主", "我有一座恐怖屋", "剑来")
         searchLayout.initData(skills, skillHots, object : onSearchCallBackListener {
             @SuppressLint("CheckResult")
-            override fun Search(p0: String?) {
+            override fun Search(keyWord: String?) {
                 //跳转到搜索结果页面
-                if (TextUtils.isEmpty(p0)) {
+                if (TextUtils.isEmpty(keyWord)) {
                     Toasty.warning(this@MainActivity, "亲，必须输入关键字哟~", Toast.LENGTH_SHORT, true).show()
                 } else {
                     //跳转页面
                     val intent = Intent(this@MainActivity, SearchResultActivity::class.java)
-                    intent.putExtra("keyWord", p0)
+                    intent.putExtra("keyWord", keyWord)
                     startActivity(intent)
                 }
             }
 
-            override fun SaveOldData(p0: ArrayList<String>?) {
+            override fun SaveOldData(alloldDataList: ArrayList<String>?) {
                 //保存所有的搜索记录
-                HistoryCache.saveHistory(applicationContext, HistoryCache.toJsonArray(skillHots))
+                HistoryCache.saveHistory(applicationContext, HistoryCache.toJsonArray(alloldDataList))
             }
 
             override fun Back() {
