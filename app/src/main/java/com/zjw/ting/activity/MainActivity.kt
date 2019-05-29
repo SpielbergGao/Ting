@@ -83,8 +83,8 @@ class MainActivity : AppCompatActivity() {
         bt.background = nextBtDrawable
         bt.setOnClickListener {
             //跳转页面
-            //val intent = Intent(this@MainActivity, SearchResultActivity::class.java)
-            //startActivity(intent)
+            val intent = Intent(this@MainActivity, HistoryActivity::class.java)
+            startActivity(intent)
         }
     }
 }

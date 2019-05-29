@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import com.blankj.rxbus.RxBus
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack
 import com.trello.rxlifecycle3.android.lifecycle.kotlin.bindUntilEvent
@@ -178,7 +179,13 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         }
         history as AudioHistorys
         history.map[intent.getStringExtra("bookUrl")] =
-            AudioHistory(getTitleStr(), videoPlayer.gsyVideoManager.currentPosition, intent.getStringExtra("url"), position)
+            AudioHistory(
+                getTitleStr(),
+                videoPlayer.gsyVideoManager.currentPosition,
+                intent.getStringExtra("bookUrl"),
+                intent.getStringExtra("url"),
+                position
+            )
         ACache.get(this).put("history", history)
     }
 
@@ -213,6 +220,8 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         var data = Intent()
         data.putExtra("bookUrl", intent.getStringExtra("bookUrl"))
         setResult(Activity.RESULT_OK, data);
+        // 发送 String 类型事件
+        RxBus.getDefault().post(intent.getStringExtra("bookUrl"))
         super.finish()
     }
 }
