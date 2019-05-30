@@ -244,10 +244,22 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     override fun finish() {
+        super.finish()
+    }
+
+    override fun onStop() {
         //记录当前播放进度
         setAudioHistory()
         // 发送 String 类型事件
         RxBus.getDefault().post(intent.getStringExtra("bookUrl"))
-        super.finish()
+        super.onStop()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        //记录当前播放进度
+        setAudioHistory()
+        // 发送 String 类型事件
+        RxBus.getDefault().post(intent.getStringExtra("bookUrl"))
+        super.onSaveInstanceState(outState)
     }
 }
