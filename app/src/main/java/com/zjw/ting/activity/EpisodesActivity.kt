@@ -117,7 +117,9 @@ class EpisodesActivity : AppCompatActivity(), LifecycleOwner {
         Observable.create(ObservableOnSubscribe<ArrayList<TingShuUtil.AudioInfo>> {
             try {
                 val urls = TingShuUtil.getEpisodesUrls(intent.getStringExtra("url"))
-                it.onNext(urls)
+                urls?.let { infos ->
+                    it.onNext(infos)
+                }
                 it.onComplete()
             } catch (e: Throwable) {
                 it.onError(e)

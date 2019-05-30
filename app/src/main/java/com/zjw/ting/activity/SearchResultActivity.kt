@@ -98,7 +98,9 @@ class SearchResultActivity : AppCompatActivity(), LifecycleOwner {
         Observable.create(ObservableOnSubscribe<ArrayList<TingShuUtil.AudioInfo>> {
             try {
                 val urls = TingShuUtil.getSearchUrls(intent.getStringExtra("keyWord"), page)
-                it.onNext(urls)
+                urls?.let { infos ->
+                    it.onNext(infos)
+                }
                 it.onComplete()
             } catch (e: Throwable) {
                 it.onError(e)

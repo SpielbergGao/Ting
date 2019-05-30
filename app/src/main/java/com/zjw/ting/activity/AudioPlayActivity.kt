@@ -224,7 +224,9 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             try {
                 if (!this.isFinishing && !this.isDestroyed) {
                     mAudioInfo = TingShuUtil.getAudioUrl(episodesUrl)
-                    it.onNext(mAudioInfo!!)
+                    mAudioInfo?.let { info ->
+                        it.onNext(info)
+                    }
                     it.onComplete()
                 }
             } catch (e: Throwable) {

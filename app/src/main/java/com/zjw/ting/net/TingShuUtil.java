@@ -10,6 +10,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
@@ -28,9 +29,14 @@ public class TingShuUtil {
      * @return
      * @throws IOException
      */
-    public static ArrayList<AudioInfo> getSearchUrls(String keyWord, long page) throws Throwable {
+    public static ArrayList<AudioInfo> getSearchUrls(String keyWord, long page) {
         ArrayList<AudioInfo> audioInfos = new ArrayList<>();
-        String keyParam = URLEncoder.encode(keyWord, "GB2312");
+        String keyParam = null;
+        try {
+            keyParam = URLEncoder.encode(keyWord, "GB2312");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         String pageParam = page > 0 ? "&page=" + page : "";
         try {
             final Connection connection = Jsoup.connect(httpHost + searchUrl + keyParam + pageParam);
@@ -54,7 +60,8 @@ public class TingShuUtil {
                 audioInfos.add(new AudioInfo(urlListElement.text().trim(), httpHost + urlListElement.attr("href")));
             }
         } catch (Throwable throwable) {
-            throw throwable;
+            audioInfos = null;
+            throwable.printStackTrace();
         }
         //System.out.println(audioInfos);
         return audioInfos;
@@ -68,7 +75,7 @@ public class TingShuUtil {
      * @return
      * @throws IOException
      */
-    public static ArrayList<AudioInfo> getEpisodesUrls(String url) throws Throwable {
+    public static ArrayList<AudioInfo> getEpisodesUrls(String url) {
         ArrayList<AudioInfo> audioInfos = new ArrayList<>();
         try {
             final Connection connection = Jsoup.connect(url);
@@ -86,7 +93,8 @@ public class TingShuUtil {
                 }
             }
         } catch (Throwable throwable) {
-            throw throwable;
+            audioInfos = null;
+            throwable.printStackTrace();
         }
         //System.out.println(audioInfos);
         return audioInfos;
@@ -99,7 +107,7 @@ public class TingShuUtil {
      * @return
      * @throws IOException
      */
-    public static AudioInfo getAudioUrl(String url) throws Throwable {
+    public static AudioInfo getAudioUrl(String url) {
         AudioInfo audioInfo = new AudioInfo(url);
         try {
             final Connection connection = Jsoup.connect(url);
@@ -128,7 +136,8 @@ public class TingShuUtil {
             StringBuffer audioStr = getAudioUrlFromText(text);
             audioInfo.setUrl(audioStr.toString());
         } catch (Throwable throwable) {
-            throw throwable;
+            audioInfo = null;
+            throwable.printStackTrace();
         }
         return audioInfo;
     }
