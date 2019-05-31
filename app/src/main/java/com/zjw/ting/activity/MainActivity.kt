@@ -45,7 +45,6 @@ class MainActivity : AppCompatActivity() {
             ).permissionCallback {
                 if (it) {
                     // 请求权限成功
-                    //Toasty.success(this@MainActivity, "权限申请成功~", Toast.LENGTH_SHORT, true).show()
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         var hasInstallPermission = isHasInstallPermissionWithO(this@MainActivity)
                         if (!hasInstallPermission) {
