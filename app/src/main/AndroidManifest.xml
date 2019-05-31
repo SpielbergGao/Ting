@@ -5,9 +5,14 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!--<uses-permission android:name="android.permission.READ_PHONE_STATE"/>-->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission
+        android:name="android.permission.READ_LOGS"
+        tools:ignore="ProtectedPermissions"/>
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <application
         android:name=".TingApp"
@@ -19,22 +24,38 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning"
-        tools:replace="android:appComponentFactory">
-        <activity android:name=".activity.HistoryActivity">
+        tools:replace="android:appComponentFactory"
+        tools:targetApi="p">
+        <activity
+            android:name=".activity.HistoryActivity"
+            android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activity.AudioPlayActivity">
+        <activity
+            android:name=".activity.AudioPlayActivity"
+            android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activity.EpisodesActivity">
+        <activity
+            android:name=".activity.EpisodesActivity"
+            android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activity.SearchResultActivity">
+        <activity
+            android:name=".activity.SearchResultActivity"
+            android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activity.MainActivity">
+        <activity
+            android:name=".activity.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.tencent.bugly.beta.ui.BetaActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize|locale"
+            android:theme="@android:style/Theme.Translucent"/>
     </application>
 
 </manifest>
