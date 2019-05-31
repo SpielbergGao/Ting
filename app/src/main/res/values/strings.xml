@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Ting</string>
+    <string name="REQUEST_INSTALL_PACKAGES">“%1$s”需要这些权限，以便更好的服务，请在设置中授权:\n\n%2$s</string>
 </resources>
