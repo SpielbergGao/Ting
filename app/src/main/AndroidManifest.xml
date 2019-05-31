@@ -25,6 +25,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning"
         tools:replace="android:appComponentFactory"
+        android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="p">
         <activity
             android:name=".activity.HistoryActivity"
@@ -57,7 +58,7 @@
             android:configChanges="keyboardHidden|orientation|screenSize|locale"
             android:theme="@android:style/Theme.Translucent"/>
 
-        <provider
+       <!-- <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileProvider"
             android:exported="false"
@@ -65,7 +66,7 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths"/>
-        </provider>
+        </provider>-->
     </application>
 
 </manifest>

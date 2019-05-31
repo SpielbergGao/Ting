@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import com.eye.cool.permission.PermissionHelper
 import com.tangguna.searchbox.library.cache.HistoryCache
 import com.tangguna.searchbox.library.callback.onSearchCallBackListener
+import com.zjw.ting.BuildConfig
 import com.zjw.ting.R
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_main.*
@@ -30,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        Toasty.info(this@MainActivity, "版本号:${BuildConfig.VERSION_CODE}", Toast.LENGTH_SHORT, true).show()
         PermissionHelper.Builder(this@MainActivity)
             .permissions(
                 arrayOf(
