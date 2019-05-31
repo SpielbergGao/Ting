@@ -25,6 +25,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning"
         tools:replace="android:appComponentFactory"
+        android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="p">
         <activity
             android:name=".activity.HistoryActivity"
