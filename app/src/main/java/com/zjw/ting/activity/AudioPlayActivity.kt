@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import com.blankj.rxbus.RxBus
+import com.google.common.net.UrlEscapers
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack
 import com.trello.rxlifecycle3.android.lifecycle.kotlin.bindUntilEvent
@@ -149,10 +150,10 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
         } else {
             canChangeUrl = true
-            var p = Pattern.compile("\\d+\\.mp3")
-            var m = p.matcher(it.url)
+            var p = Pattern.compile("第\\d+集")
+            var m = p.matcher(it.currentPosstion)
             if (m.find()) {
-                position = m.group(0).replace(".mp3", "").toInt()
+                position = m.group(0).replace("第", "").replace("集", "").toInt()
             }
             onSuccess()
             titleTv.text = getTitleStr()
@@ -171,14 +172,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
     //因为播放器不接受url中带有中文，因此需要做处理
     private fun handleUrl(url: String): String {
-        var realUrl = url
-        val toCharArray = realUrl.toCharArray()
-        toCharArray.forEachIndexed { _, c ->
-            if (isChineseChar(c)) {
-                realUrl = realUrl.replace(c.toString(), URLEncoder.encode(c.toString(), "utf-8"))
-            }
-        }
-        return realUrl
+        return UrlEscapers.urlFragmentEscaper().escape(url)
     }
 
     private fun isChineseChar(c: Char): Boolean {

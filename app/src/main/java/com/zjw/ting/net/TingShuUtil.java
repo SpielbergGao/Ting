@@ -6,6 +6,8 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
@@ -120,6 +122,11 @@ public class TingShuUtil {
             Element nextUrlElment = doc.select("a:contains(下一集)").first();
             audioInfo.setNextUrl(httpHost + nextUrlElment.attr("href"));
 
+            //获取当前集数
+            Element currentUrlElment = doc.select("div#i").first();
+            final Node node = currentUrlElment.childNodes().get(1);
+            audioInfo.setCurrentPosstion(((TextNode) node).toString());
+
             Element frame = doc.select("iframe[src*=play]").first();
             String src = frame.attr("src");
             String relHref = httpHost + src;
@@ -203,6 +210,8 @@ public class TingShuUtil {
         private String episodesUrl;
         private String preUrl;
         private String nextUrl;
+        //当前播放的集数
+        private String currentPosstion;
 
         public AudioInfo(String episodesUrl) {
             this.episodesUrl = episodesUrl;
@@ -260,13 +269,23 @@ public class TingShuUtil {
             this.episodesUrl = episodesUrl;
         }
 
+        public String getCurrentPosstion() {
+            return currentPosstion;
+        }
+
+        public void setCurrentPosstion(String currentPosstion) {
+            this.currentPosstion = currentPosstion;
+        }
+
         @Override
         public String toString() {
             return "AudioInfo{" +
                     "info='" + info + '\'' +
                     ", url='" + url + '\'' +
+                    ", episodesUrl='" + episodesUrl + '\'' +
                     ", preUrl='" + preUrl + '\'' +
                     ", nextUrl='" + nextUrl + '\'' +
+                    ", currentPosstion='" + currentPosstion + '\'' +
                     '}';
         }
     }
