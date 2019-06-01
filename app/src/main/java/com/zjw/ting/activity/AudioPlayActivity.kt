@@ -250,7 +250,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             }
         }).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .bindUntilEvent(this@AudioPlayActivity, Lifecycle.Event.ON_STOP)
+            .bindUntilEvent(this@AudioPlayActivity, Lifecycle.Event.ON_DESTROY)
             .subscribe({
                 onSuccess(it)
             }, {
