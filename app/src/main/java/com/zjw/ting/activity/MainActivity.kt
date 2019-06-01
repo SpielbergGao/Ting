@@ -16,7 +16,6 @@ import androidx.core.content.ContextCompat
 import com.eye.cool.permission.PermissionHelper
 import com.tangguna.searchbox.library.cache.HistoryCache
 import com.tangguna.searchbox.library.callback.onSearchCallBackListener
-import com.zjw.ting.BuildConfig
 import com.zjw.ting.R
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_main.*
@@ -31,17 +30,21 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-       // Toasty.info(this@MainActivity, "版本号:${BuildConfig.VERSION_CODE}", Toast.LENGTH_SHORT, true).show()
+        // Toasty.info(this@MainActivity, "版本号:${BuildConfig.VERSION_CODE}", Toast.LENGTH_SHORT, true).show()
+        val permissions = arrayListOf(
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.INTERNET,
+            Manifest.permission.ACCESS_NETWORK_STATE,
+            Manifest.permission.ACCESS_WIFI_STATE
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            permissions.add(Manifest.permission.FOREGROUND_SERVICE)
+        }
         PermissionHelper.Builder(this@MainActivity)
             .permissions(
-                arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.INTERNET,
-                    Manifest.permission.ACCESS_NETWORK_STATE,
-                    Manifest.permission.ACCESS_WIFI_STATE
-                )
-                //permissions.toTypedArray()
+                permissions.toTypedArray()
             ).permissionCallback {
                 if (it) {
                     // 请求权限成功

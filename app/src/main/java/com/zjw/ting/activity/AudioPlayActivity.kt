@@ -50,7 +50,6 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         // var url = "http://180l.ysts8.com:8000/恐怖小说/我当算命先生那些年/014.mp3?1231710044742x1558968690x1231716175402-f002e814b9d51c55addf150d702074fc?3"
         position = intent.getIntExtra("position", 1)
         episodesUrl = intent.getStringExtra("url")
-        serviceIntent = Intent(applicationContext, NotificationService::class.java)
         loadData(episodesUrl, onSuccess = {
             setTitleAndPlay(it, true)
             videoPlayer.setVideoAllCallBack(object : GSYSampleCallBack() {
@@ -177,11 +176,11 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             if (m.find()) {
                 position = m.group(0).replace("第", "").replace("集", "").toInt()
             }
-            //开启服务
-            serviceIntent?.let { that ->
-                that.action = START_SERVICE
-                startService(that)
-            }
+
+            val serviceIntent = Intent(applicationContext, NotificationService::class.java)
+            serviceIntent.action = START_SERVICE
+            startService(serviceIntent)
+
             onSuccess()
             titleTv.text = getTitleStr()
             Toasty.success(this@AudioPlayActivity, "url ${it.url}").show()
@@ -212,12 +211,6 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
     fun onVideoResume() {
         videoPlayer.onVideoResume()
-    }
-
-    override fun onDestroy() {
-        GSYVideoManager.releaseAllVideos()
-        RxBus.getDefault().unregister(this)
-        super.onDestroy()
     }
 
     private fun setAudioHistory() {
@@ -264,9 +257,6 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             })
     }
 
-    override fun finish() {
-        super.finish()
-    }
 
     override fun onStop() {
         //记录当前播放进度
@@ -274,6 +264,15 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         // 发送 String 类型事件
         RxBus.getDefault().post(intent.getStringExtra("bookUrl"))
         super.onStop()
+    }
+
+    override fun onDestroy() {
+        GSYVideoManager.releaseAllVideos()
+        RxBus.getDefault().unregister(this)
+        val serviceIntent = Intent(applicationContext, NotificationService::class.java)
+        serviceIntent.action = NOTIFY_STOP
+        startService(serviceIntent)
+        super.onDestroy()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

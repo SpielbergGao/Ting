@@ -1,12 +1,14 @@
 package com.zjw.ting.notification
 
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import android.widget.Toast
+import androidx.core.app.NotificationCompat
 import com.blankj.rxbus.RxBus
 import com.zjw.ting.bean.Event
 
@@ -45,7 +47,7 @@ class NotificationService : Service() {
             when (action) {
                 START_SERVICE -> {
                     val showNotification = notificationGenerator.showNotification(applicationContext)
-                    //startForeground(100, showNotification)
+                    startForeground(100, showNotification)
                 }
                 NOTIFY_PREVIOUS -> {
                     RxBus.getDefault().post(Event.ServiceEvent(action))

@@ -9,11 +9,14 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Build
+import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import com.zjw.ting.R
 import com.zjw.ting.activity.AudioPlayActivity
+
+
 
 
 const val NOTIFY_PLAY = "NOTIFY_PLAY"
@@ -29,6 +32,7 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
 
     private lateinit var bigView: RemoteViews
     private lateinit var smallView: RemoteViews
+    private lateinit var contentView: RemoteViews
     private var notificationManager: NotificationManager? = null
     private var notificationChannel: NotificationChannel? = null
 
@@ -46,7 +50,9 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
         artistName: String = "Artist Name",
         albumName: String = "Album Name"
     ): Notification {
+        Log.e("tag","showNotification")
         // Using RemoteViews to bind custom layouts into Notification
+        contentView = RemoteViews(context.packageName, R.layout.status_normal_bar)
         smallView = RemoteViews(context.packageName, R.layout.status_bar)
         bigView = RemoteViews(context.packageName, R.layout.status_bar_expanded)
 
@@ -70,19 +76,26 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
 
         // Notification through notification manager
         lateinit var notification: Notification
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            nBuilder.setCustomBigContentView(bigView)
-            nBuilder.setCustomContentView(smallView)
+
+        /* Add Big View Specific Configuration */
+        nBuilder.setContent(bigView)
+        notification = nBuilder.build()
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            //nBuilder.setCustomBigContentView(bigView)
+            //NotificationManager.IMPORTANCE_LOW
+            //nBuilder.setCustomContentView(smallView)
             notification = nBuilder.build()
         } else {
             notification = nBuilder.build()
             notification.contentView = smallView
             notification.bigContentView = bigView
         }
-
+*/
         // Notification through notification manager
         notification.flags = Notification.FLAG_ONLY_ALERT_ONCE
         notificationManager?.notify(NOTIFICATION_ID, notification)
+        //因为会一次弹出2个
+        notificationManager?.cancel(NOTIFICATION_ID)
         return notification
     }
 
@@ -150,7 +163,9 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (null == notificationChannel) {
-                notificationChannel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH)
+                //notificationChannel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH)
+                //IMPORTANCE_HIGH 悬浮提示
+                notificationChannel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW)
                 notificationChannel?.apply {
                     enableLights(true)
                     lightColor = Color.GREEN
@@ -166,6 +181,9 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
             .setSmallIcon(notificationIconId)
             .setLargeIcon(BitmapFactory.decodeResource(context.resources, notificationIconId))
             .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setOngoing(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setContentIntent(pendingIntent)
             .setTicker(notificationTicker)
 
