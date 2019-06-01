@@ -39,7 +39,6 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     private var mCurrentUrl: String = ""
     private var canChangeUrl = true
     private var episodesUrl: String = ""
-    private var serviceIntent: Intent? = null
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,9 +121,8 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         }
         mAudioInfo?.preUrl?.let { preUrl ->
             loadData(preUrl, onSuccess = {
-                setTitleAndPlay(it, false) {
-                    episodesUrl = preUrl
-                }
+                episodesUrl = preUrl
+                setTitleAndPlay(it, false)
             }, onError = {
                 it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
             })
@@ -140,9 +138,8 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
         mAudioInfo?.nextUrl?.let { nextUrl ->
             loadData(nextUrl, onSuccess = {
-                setTitleAndPlay(it, false) {
-                    episodesUrl = nextUrl
-                }
+                episodesUrl = nextUrl
+                setTitleAndPlay(it, false)
             }, onError = {
                 it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
             })
@@ -208,9 +205,6 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         return UrlEscapers.urlFragmentEscaper().escape(url)
     }
 
-    private fun isChineseChar(c: Char): Boolean {
-        return c.toString().matches("[\u4e00-\u9fa5]".toRegex())
-    }
 
     fun onVideoPause() {
         videoPlayer.onVideoPause()
