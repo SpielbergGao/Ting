@@ -1,6 +1,7 @@
 package com.zjw.ting.activity
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -15,7 +16,9 @@ import com.trello.rxlifecycle3.android.lifecycle.kotlin.bindUntilEvent
 import com.zjw.ting.R
 import com.zjw.ting.bean.AudioHistory
 import com.zjw.ting.bean.AudioHistorys
+import com.zjw.ting.bean.Event
 import com.zjw.ting.net.TingShuUtil
+import com.zjw.ting.notification.*
 import com.zjw.ting.util.ACache
 import es.dmoral.toasty.Toasty
 import io.reactivex.Observable
@@ -24,22 +27,19 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_audio_play.*
 import top.defaults.drawabletoolbox.DrawableBuilder
-import java.net.URLEncoder
 import java.util.regex.Pattern
 
 
 class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
-    private var position: Int = 1
 
     @Volatile
     private var mAudioInfo: TingShuUtil.AudioInfo? = null
-
+    private var position: Int = 1
     private var mCurrentUrl: String = ""
-
     private var canChangeUrl = true
-
     private var episodesUrl: String = ""
+    private var serviceIntent: Intent? = null
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +50,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         // var url = "http://180l.ysts8.com:8000/恐怖小说/我当算命先生那些年/014.mp3?1231710044742x1558968690x1231716175402-f002e814b9d51c55addf150d702074fc?3"
         position = intent.getIntExtra("position", 1)
         episodesUrl = intent.getStringExtra("url")
+        serviceIntent = Intent(applicationContext, NotificationService::class.java)
         loadData(episodesUrl, onSuccess = {
             setTitleAndPlay(it, true)
             videoPlayer.setVideoAllCallBack(object : GSYSampleCallBack() {
@@ -57,6 +58,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
                     playNext()
                 }
             })
+
         }, onError = {
             it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
         })
@@ -69,23 +71,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             .build()
         preBt.background = preBtDrawable
         preBt.setOnClickListener {
-            if (position <= 1) {
-                Toasty.info(this, "没有上一集哟~").show()
-                return@setOnClickListener
-            }
-            if (!canChangeUrl) {
-                Toasty.info(this@AudioPlayActivity, "重试获取资源中，无法切换集数~").show()
-                return@setOnClickListener
-            }
-            mAudioInfo?.preUrl?.let { preUrl ->
-                loadData(preUrl, onSuccess = {
-                    setTitleAndPlay(it, false) {
-                        episodesUrl = preUrl
-                    }
-                }, onError = {
-                    it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
-                })
-            }
+            playPre()
         }
 
 
@@ -97,20 +83,56 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             .build()
         nextBt.background = nextBtDrawable
         nextBt.setOnClickListener {
-            if (!canChangeUrl) {
-                Toasty.info(this@AudioPlayActivity, "重试获取资源中，无法切换集数~").show()
-                return@setOnClickListener
-            }
-            /*if (TingShuUtil.countPage > 0 && (position >= TingShuUtil.countPage)) {
-                Toasty.info(this, "没有下一集哟~").show()
-                return@setOnClickListener
-            }*/
             playNext()
+        }
+
+        // 注册 String 类型事件
+        RxBus.getDefault().subscribeSticky(this, object : RxBus.Callback<Event.ServiceEvent>() {
+            override fun onEvent(event: Event.ServiceEvent) {
+                when (event.action) {
+                    NOTIFY_PREVIOUS -> {
+                        playPre()
+                    }
+                    NOTIFY_PLAY -> {
+                        onVideoResume()
+                    }
+                    NOTIFY_NEXT -> {
+                        playNext()
+                    }
+                    NOTIFY_STOP -> {
+                    }
+                }
+            }
+        })
+    }
+
+    private fun playPre() {
+        if (position <= 1) {
+            Toasty.info(this, "没有上一集哟~").show()
+            return
+        }
+        if (!canChangeUrl) {
+            Toasty.info(this@AudioPlayActivity, "重试获取资源中，无法切换集数~").show()
+            return
+        }
+        mAudioInfo?.preUrl?.let { preUrl ->
+            loadData(preUrl, onSuccess = {
+                setTitleAndPlay(it, false) {
+                    episodesUrl = preUrl
+                }
+            }, onError = {
+                it.message?.let { msg -> Toasty.error(this@AudioPlayActivity, msg).show() }
+            })
         }
     }
 
     @SuppressLint("SetTextI18n")
     private fun playNext() {
+        if (!canChangeUrl) {
+            Toasty.info(this@AudioPlayActivity, "重试获取资源中，无法切换集数~").show()
+            return
+        }
+
         mAudioInfo?.nextUrl?.let { nextUrl ->
             loadData(nextUrl, onSuccess = {
                 setTitleAndPlay(it, false) {
@@ -155,6 +177,11 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             if (m.find()) {
                 position = m.group(0).replace("第", "").replace("集", "").toInt()
             }
+            //开启服务
+            serviceIntent?.let { that ->
+                that.action = START_SERVICE
+                startService(that)
+            }
             onSuccess()
             titleTv.text = getTitleStr()
             Toasty.success(this@AudioPlayActivity, "url ${it.url}").show()
@@ -179,19 +206,17 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         return c.toString().matches("[\u4e00-\u9fa5]".toRegex())
     }
 
-    override fun onPause() {
-        super.onPause()
-        // videoPlayer.onVideoPause()
+    fun onVideoPause() {
+        videoPlayer.onVideoPause()
     }
 
-    override fun onResume() {
-        super.onResume()
-        // videoPlayer.onVideoResume()
+    fun onVideoResume() {
+        videoPlayer.onVideoResume()
     }
-
 
     override fun onDestroy() {
         GSYVideoManager.releaseAllVideos()
+        RxBus.getDefault().unregister(this)
         super.onDestroy()
     }
 

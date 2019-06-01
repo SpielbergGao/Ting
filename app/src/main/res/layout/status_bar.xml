@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@android:color/black"
+              android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/status_bar_album_art"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:gravity="center"
+        android:visibility="gone"
+        tools:ignore="ContentDescription"/>
+
+    <ImageView
+        android:id="@+id/status_bar_icon"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:scaleType="center"
+        android:src="@mipmap/ic_launcher"
+        android:visibility="visible"
+        tools:ignore="ContentDescription"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingStart="11dp"
+        android:paddingEnd="11dp"
+        android:visibility="invisible"
+        >
+
+        <TextView
+            android:id="@+id/status_bar_track_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="Song Name"/>
+
+        <TextView
+            android:id="@+id/status_bar_artist_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:visibility="gone"
+            tools:text="Artist Name"/>
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/status_bar_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:contentDescription="Play"
+        android:src="@drawable/ic_play_arrow_24dp"/>
+
+    <ImageView
+        android:id="@+id/status_bar_next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:contentDescription="Skip Forward"
+        android:src="@drawable/ic_skip_next_24dp"/>
+
+    <ImageView
+        android:id="@+id/status_bar_collapse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:src="@drawable/ic_close_24dp"
+        tools:ignore="ContentDescription"/>
+</LinearLayout>
