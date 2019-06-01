@@ -48,6 +48,7 @@ class NotificationService : Service() {
             when (action) {
                 START_SERVICE -> {
                     val showNotification = notificationGenerator.showNotification(applicationContext)
+                    notificationGenerator.setTitleText(this.getStringExtra("title"))
                     startForeground(100, showNotification)
                 }
                 NOTIFY_PREVIOUS -> {

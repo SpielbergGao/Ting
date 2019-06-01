@@ -185,6 +185,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
             val serviceIntent = Intent(applicationContext, NotificationService::class.java)
             serviceIntent.action = START_SERVICE
+            serviceIntent.putExtra("title",getTitleStr())
             startService(serviceIntent)
 
             onSuccess()

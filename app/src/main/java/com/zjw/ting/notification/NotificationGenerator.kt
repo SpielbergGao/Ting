@@ -32,7 +32,6 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
 
     private lateinit var bigView: RemoteViews
     private lateinit var smallView: RemoteViews
-    private lateinit var contentView: RemoteViews
     private var notificationManager: NotificationManager? = null
     private var notificationChannel: NotificationChannel? = null
 
@@ -52,7 +51,6 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
     ): Notification {
         Log.e("tag","showNotification")
         // Using RemoteViews to bind custom layouts into Notification
-        contentView = RemoteViews(context.packageName, R.layout.status_normal_bar)
         smallView = RemoteViews(context.packageName, R.layout.status_bar)
         bigView = RemoteViews(context.packageName, R.layout.status_bar_expanded)
 
@@ -130,6 +128,9 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
         bigView.setTextViewText(R.id.status_bar_album_name, albumName)
     }
 
+    fun setTitleText(title :String){
+        bigView.setTextViewText(R.id.status_bar_track_name, title)
+    }
 
     private fun createPendingIntent(context: Context, action: String): PendingIntent {
         val intentPlay = Intent(context, NotificationService::class.java)

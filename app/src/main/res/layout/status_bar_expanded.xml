@@ -98,13 +98,13 @@
 
         <TextView
             android:id="@+id/status_bar_track_name"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
             android:ellipsize="marquee"
             android:fadingEdge="horizontal"
             android:focusable="true"
-            android:singleLine="true"
+            android:maxLines="3"
             android:textColor="@android:color/white"
             tools:text="Song Name"/>
 
