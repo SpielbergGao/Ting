@@ -93,7 +93,13 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
                         playPre()
                     }
                     NOTIFY_PLAY -> {
-                        onVideoResume()
+                        videoPlayer.gsyVideoManager?.let {
+                            if (videoPlayer.gsyVideoManager.isPlaying) {
+                                onVideoPause()
+                            } else {
+                                onVideoResume()
+                            }
+                        }
                     }
                     NOTIFY_NEXT -> {
                         playNext()

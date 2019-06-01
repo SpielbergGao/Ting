@@ -197,7 +197,8 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
 
     private fun getPendingIntent(context: Context): PendingIntent {
         val resultIntent = Intent(context, notificationIntentClass)
-        resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        resultIntent.action = Intent.ACTION_MAIN
+        resultIntent.addCategory(Intent.CATEGORY_LAUNCHER)
         return PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 }
