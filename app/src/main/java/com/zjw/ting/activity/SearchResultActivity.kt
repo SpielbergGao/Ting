@@ -12,7 +12,7 @@ import com.trello.rxlifecycle3.android.lifecycle.kotlin.bindUntilEvent
 import com.zjw.ting.R
 import com.zjw.ting.adapter.SearchResultAdapter
 import com.zjw.ting.bean.AudioInfo
-import com.zjw.ting.net.TingShuUtil2
+import com.zjw.ting.net.TingShuUtil
 import es.dmoral.toasty.Toasty
 import io.reactivex.Observable
 import io.reactivex.ObservableOnSubscribe
@@ -98,7 +98,7 @@ class SearchResultActivity : AppCompatActivity(), LifecycleOwner {
     private fun loadData(page: Long, onSuccess: (list: ArrayList<AudioInfo>) -> Unit, onError: (e: Throwable) -> Unit) {
         Observable.create(ObservableOnSubscribe<ArrayList<AudioInfo>> {
             try {
-                val urls = TingShuUtil2.getSearchUrls(intent.getStringExtra("keyWord"), page)
+                val urls = TingShuUtil.getSearchUrls(intent.getStringExtra("keyWord"), page)
                 urls?.let { infos ->
                     it.onNext(infos)
                 }

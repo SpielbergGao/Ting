@@ -15,7 +15,7 @@ import com.zjw.ting.R
 import com.zjw.ting.adapter.EposodesAdapter
 import com.zjw.ting.bean.AudioHistorys
 import com.zjw.ting.bean.AudioInfo
-import com.zjw.ting.net.TingShuUtil2
+import com.zjw.ting.net.TingShuUtil
 import com.zjw.ting.util.ACache
 import es.dmoral.toasty.Toasty
 import io.reactivex.Observable
@@ -115,7 +115,7 @@ class EpisodesActivity : AppCompatActivity(), LifecycleOwner {
     private fun loadData(onSuccess: (list: ArrayList<AudioInfo>) -> Unit, onError: (e: Throwable) -> Unit) {
         Observable.create(ObservableOnSubscribe<ArrayList<AudioInfo>> {
             try {
-                val urls = TingShuUtil2.getEpisodesUrls(intent.getStringExtra("url"))
+                val urls = TingShuUtil.getEpisodesUrls(intent.getStringExtra("url"))
                 urls?.let { infos ->
                     it.onNext(infos)
                 }

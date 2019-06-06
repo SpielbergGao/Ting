@@ -19,7 +19,6 @@ import com.zjw.ting.bean.AudioHistorys
 import com.zjw.ting.bean.AudioInfo
 import com.zjw.ting.bean.Event
 import com.zjw.ting.net.TingShuUtil
-import com.zjw.ting.net.TingShuUtil2
 import com.zjw.ting.notification.*
 import com.zjw.ting.util.ACache
 import es.dmoral.toasty.Toasty
@@ -29,7 +28,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_audio_play.*
 import top.defaults.drawabletoolbox.DrawableBuilder
-import java.util.regex.Pattern
 
 
 class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
@@ -176,19 +174,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
         } else {
             canChangeUrl = true
-            if (TingShuUtil.useDefaultTingShuUtil) {
-                var p = Pattern.compile("第\\d+集")
-                var m = p.matcher(it.currentPosstion)
-                if (m.find()) {
-                    position = m.group(0).replace("第", "").replace("集", "").toInt()
-                }
-            }else{
-                var p =  Pattern.compile("\\d+.mp3")
-                var m = p.matcher(it.wrapUrl)
-                if (m.find()) {
-                    position = m.group(0).replace(".mp3", "").toInt()
-                }
-            }
+            position = it.currentPosstion.toInt()
 
             val serviceIntent = Intent(applicationContext, NotificationService::class.java)
             serviceIntent.action = START_SERVICE
@@ -246,7 +232,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         Observable.create(ObservableOnSubscribe<AudioInfo> {
             try {
                 if (!this.isFinishing && !this.isDestroyed) {
-                    mAudioInfo = TingShuUtil2.getAudioUrl(episodesUrl)
+                    mAudioInfo = TingShuUtil.getAudioUrl(episodesUrl)
                     mAudioInfo?.let { info ->
                         it.onNext(info)
                     }

@@ -20,12 +20,12 @@ import java.util.ArrayList;
 
 public class TingShuUtil {
     //有声听书吧
-    public static String httpHost = "https://www.ysts8.com";
-    public static String host = "www.ysts8.com";
-    public static String searchUrl = "/Ys_so.asp?stype=1&keyword=";
+    public static String httpHost = "https://m.ysts8.com";
+    public static String host = "m.ysts8.com";
+    public static String searchUrl = "/so.asp?keyword=";
     public static long countPage = -1;
 
-    public static boolean useDefaultTingShuUtil = false;
+    public static boolean useDefaultTingShuUtil = true;
 
     /**
      * 获取搜索到的作品列表信息
@@ -52,18 +52,18 @@ public class TingShuUtil {
             final Document doc = connection.get();
 
             //获取总页数
-            Element countPageElement = doc.select("b:contains(共)").first();
-            String countPageStr = countPageElement.childNode(0).toString().trim().split("/")[1].replace("页", "");
+            Element countPageElement = doc.select("a:contains(页次)").first();
+            String countPageStr = countPageElement.childNode(0).toString().trim().split("/")[1];
             countPage = Long.parseLong(countPageStr);
             //System.out.println("总页数 " + countPage);
             //获取当前页播放列表url集合
             //jsoup select用法参考https://www.cnblogs.com/yueshutong/p/9381530.html
-            Element listDiv = doc.select("div.pingshu_ysts8").first();
+            Element listDiv = doc.select("div.top_list").first();
             Elements urlListElements = listDiv.select("a[href]");
             for (Element urlListElement : urlListElements) {
                 //名称 状态
                 //urlListElement.text() 代表该节点的内容文本以及其嵌套的子节点的内容文本
-                audioInfos.add(new AudioInfo(urlListElement.text().trim(), httpHost + urlListElement.attr("href")));
+                audioInfos.add(new AudioInfo(urlListElement.childNodes().get(1).outerHtml() + " " + urlListElement.childNodes().get(2).childNode(0).outerHtml(), httpHost + urlListElement.attr("href")));
             }
         } catch (Throwable throwable) {
             audioInfos = null;
@@ -90,11 +90,11 @@ public class TingShuUtil {
             //  connection.header("referer", httpHost + "/");
             final Document doc = connection.get();
 
-            Element listDiv = doc.select("div.ny_l").first();
+            Element listDiv = doc.select("div.compress").first();
             Elements urlListElements = listDiv.select("a[href]");
             for (Element urlListElement : urlListElements) {
                 //<a href="/play_16702_55_1_1.html" title="001.mp3">[第001集]</a>
-                if (urlListElement.outerHtml().contains("集")) {
+                if (urlListElement.outerHtml().contains("第")) {
                     audioInfos.add(new AudioInfo(urlListElement.text().trim(), httpHost + urlListElement.attr("href")));
                 }
             }
@@ -122,14 +122,14 @@ public class TingShuUtil {
 
             //获取上下集的html
             Element preUrlElment = doc.select("a:contains(上一集)").first();
-            audioInfo.setPreUrl(httpHost + preUrlElment.attr("href"));
+            audioInfo.setPreUrl(httpHost + "/play_m/" + preUrlElment.attr("href"));
             Element nextUrlElment = doc.select("a:contains(下一集)").first();
-            audioInfo.setNextUrl(httpHost + nextUrlElment.attr("href"));
+            audioInfo.setNextUrl(httpHost + "/play_m/" + nextUrlElment.attr("href"));
 
             //获取当前集数
-            Element currentUrlElment = doc.select("div#i").first();
+            Element currentUrlElment = doc.select("h3.sub_tit").first();
             final Node node = currentUrlElment.childNodes().get(1);
-            audioInfo.setCurrentPosstion(((TextNode) node).toString());
+            audioInfo.setCurrentPosstion(((TextNode) node).toString().split("回")[0].replace("第", ""));
 
             Element frame = doc.select("iframe[src*=play]").first();
             String src = frame.attr("src");
@@ -163,26 +163,9 @@ public class TingShuUtil {
                 list.add(trim);
             }
             if (trim.contains("mp3:")) {
-                String[] strUrl = trim.replace("mp3:", "").split("\\+");
-                String part1 = strUrl[0].replace("'", "").trim();
-                //System.out.println("part1 ==== " + part1);
-                audioStr.append(part1);
-                for (int j = 0; j < list.size(); j++) {
-                    if (list.get(j).trim().split(" = ")[0].equals(strUrl[1])) {
-                        String part2 = list.get(j).trim().split(" = ")[1].replace("'", "").replace(";", "");
-                        //特殊情况 url2598185 = ''+murl2598185+'126597953824x1558907797x126671352392-76152f3a765eb206245595d269214c51';
-                        for (int k = 0; k < list.size(); k++) {
-                            if (part2.contains(list.get(k).trim().split(" = ")[0])) {
-                                part2 = part2.replace("+", "").replace(list.get(k).trim().split(" = ")[0], list.get(k).trim().split(" = ")[1].replace("'", "").replace(";", ""));
-                            }
-                        }
-                        audioStr.append(part2);
-                        //System.out.println("part2 ==== " + part2);
-                    }
-                }
-                String part3 = strUrl[2].replace("'", "").trim();
-                //System.out.println("part3 ==== " + part3);
-                audioStr.append(part3);
+                //mp3:'http://psf.tt56w.com:8000/刘兰芳/努尔哈赤/刘兰芳_努尔哈赤_05.mp3?126598878994x1559832967x126605009654-c4c16a404860c1a040cc0b8b76376'
+                String strUrl = trim.replace("mp3:", "").replace("'", "");
+                audioStr.append(strUrl);
             }
         }
         //System.out.println(text);
@@ -200,7 +183,7 @@ public class TingShuUtil {
         connect.header("scheme", "https");
         //connect.header("cookie", "ASPSESSIONIDAWCQBSBB=PMAAPIHCAHGKNCGENGPIEPAK; startime=1");
         //connect.header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
-        connect.header("User-Agent", "Mozilla/5.0 (Linux; U; Android 8.1.0; zh-cn; BLA-AL00 Build/HUAWEIBLA-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/8.9 Mobile Safari/537.36");
+        connect.header("User-Agent", "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Mobile Safari/537.36");
         connect.header("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
         connect.header("accept-encoding", "gzip, deflate, br");
         connect.header("accept-language", "zh-CN,zh;q=0.9,en;q=0.8");
