@@ -4,6 +4,7 @@ import com.zjw.ting.bean.AudioInfo;
 import com.zjw.ting.util.JSEngine;
 
 import org.jsoup.Connection;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -43,7 +44,7 @@ public class TingShuUtil2 {
             Elements bookInfosDiv = booksDiv.select("div.bookbox");
             for (int i = 0; i < bookInfosDiv.size(); i++) {
                 Element element = bookInfosDiv.get(i);
-                String bookUrl = httpHost + element.select("a[href]").first().attr("href");
+                String bookUrl = httpHost + "show-" + element.attr("bookid") + ".html";
                 //ownText 直属标签外层外层text  --- text 直属标签外层text+内嵌子标签的text
                 String info = element.select("h4.bookname").first().ownText() + " / " + element.select("div.author").first().ownText() + " " + element.select("div.update").first().text();
                 audioInfos.add(new AudioInfo(info, bookUrl));
@@ -108,10 +109,6 @@ public class TingShuUtil2 {
         AudioInfo audioInfo = new AudioInfo(url);
         try {
             final Connection connection = Jsoup.connect(url);
-            // path   /player.php?mov_id=1022&look_id=4&player=mp
-            // referer      https://m.mp3book.cn/player.php?mov_id=1022&look_id=1&player=mp
-            //connection.header("path", searchUrl + keyParam + pageParam);
-            //  connection.header("referer", httpHost + "/");
             setCommonHeader(connection);
             connection.header("path", url.replace(host, ""));
             final Document doc = connection.get();
@@ -147,7 +144,26 @@ public class TingShuUtil2 {
                     wrapUrl = trim.split("\"")[1];
                 }
             }
-            audioInfo.setUrl(currentUrl);
+
+            try {
+                final Connection connectSrc = Jsoup.connect(currentUrl);
+                setCommonHeader(connectSrc);
+                connectSrc.get();
+                audioInfo.setUrl(currentUrl);
+            } catch (HttpStatusException e) {
+                try {
+                    final Connection connectWrap = Jsoup.connect(wrapUrl);
+                    setCommonHeader(connectWrap);
+                    connectWrap.get();
+                    audioInfo.setUrl(wrapUrl);
+                } catch (HttpStatusException ex) {
+                    audioInfo.setUrl(wrapUrl.replace("mp3", "m4a"));
+                } catch (IOException io) {
+                    audioInfo.setUrl(wrapUrl);
+                }
+            } catch (IOException ioEx) {
+                audioInfo.setUrl(currentUrl);
+            }
             audioInfo.setWrapUrl(wrapUrl);
             // System.out.println(currentUrl);
         } catch (Throwable throwable) {

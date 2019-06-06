@@ -3,8 +3,10 @@ package com.zjw.ting.activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.blankj.rxbus.RxBus
+import com.lxj.xpopup.XPopup
 import com.yanzhenjie.recyclerview.touch.OnItemMoveListener
 import com.zjw.ting.R
 import com.zjw.ting.adapter.HistoryAdapter
@@ -13,6 +15,7 @@ import com.zjw.ting.bean.AudioHistorys
 import com.zjw.ting.util.ACache
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_history.*
+import top.defaults.drawabletoolbox.DrawableBuilder
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -78,6 +81,25 @@ class HistoryActivity : AppCompatActivity() {
             }
             rv.adapter = adapter
 
+            val nextBtDrawable = DrawableBuilder()
+                .rectangle()
+                .rounded()
+                .solidColor(ContextCompat.getColor(this, R.color.colorPrimary))
+                .solidColorPressed(ContextCompat.getColor(this, R.color.colorPrimaryDark))
+                .build()
+            bt.background = nextBtDrawable
+            bt.setOnClickListener {
+                XPopup.Builder(this@HistoryActivity).asConfirm(
+                    "清空听书记录", "是否要清空记录"
+                ) {
+                    ACache.get(this@HistoryActivity).remove("history")
+                    // 发送 String 类型事件
+                    RxBus.getDefault().post("update history")
+                    adapter.items?.clear()
+                    adapter.notifyDataSetChanged()
+
+                }.show()
+            }
 
             // 注册 String 类型事件
             RxBus.getDefault().subscribeSticky(this, object : RxBus.Callback<String>() {

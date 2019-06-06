@@ -49,7 +49,6 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
         artistName: String = "Artist Name",
         albumName: String = "Album Name"
     ): Notification {
-        Log.e("tag","showNotification")
         // Using RemoteViews to bind custom layouts into Notification
         smallView = RemoteViews(context.packageName, R.layout.status_bar)
         bigView = RemoteViews(context.packageName, R.layout.status_bar_expanded)
