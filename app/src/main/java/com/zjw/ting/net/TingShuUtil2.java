@@ -145,25 +145,20 @@ public class TingShuUtil2 {
                 }
             }
 
-            try {
-                final Connection connectSrc = Jsoup.connect(currentUrl);
-                setCommonHeader(connectSrc);
-                connectSrc.get();
-                audioInfo.setUrl(currentUrl);
-            } catch (HttpStatusException e) {
-                try {
-                    final Connection connectWrap = Jsoup.connect(wrapUrl);
-                    setCommonHeader(connectWrap);
-                    connectWrap.get();
-                    audioInfo.setUrl(wrapUrl);
-                } catch (HttpStatusException ex) {
-                    audioInfo.setUrl(wrapUrl.replace("mp3", "m4a"));
-                } catch (IOException io) {
-                    audioInfo.setUrl(wrapUrl);
-                }
-            } catch (IOException ioEx) {
-                audioInfo.setUrl(currentUrl);
-            }
+            //try {
+            //    final Connection connectSrc = Jsoup.connect(currentUrl);
+            //    setCommonHeader(connectSrc);
+            //    connectSrc.method(Connection.Method.HEAD);
+            //    Connection.Response head = connectSrc.execute();
+            //    audioInfo.setUrl(currentUrl);
+            //} catch (HttpStatusException ex) {
+            //    audioInfo.setUrl(wrapUrl);
+            //} catch (IOException ioEx) {
+            //    audioInfo.setUrl(wrapUrl);
+            //}
+
+            audioInfo.setUrl(currentUrl);
+            //audioInfo.setUrl(wrapUrl);
             audioInfo.setWrapUrl(wrapUrl);
             // System.out.println(currentUrl);
         } catch (Throwable throwable) {
