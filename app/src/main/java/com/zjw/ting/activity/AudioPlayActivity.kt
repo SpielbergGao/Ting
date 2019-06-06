@@ -174,15 +174,11 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
         } else {
             canChangeUrl = true
-            var p = Pattern.compile("第\\d+集")
-            var m = p.matcher(it.currentPosstion)
-            if (m.find()) {
-                position = m.group(0).replace("第", "").replace("集", "").toInt()
-            }
+            position = it.currentPosstion.toInt()
 
             val serviceIntent = Intent(applicationContext, NotificationService::class.java)
             serviceIntent.action = START_SERVICE
-            serviceIntent.putExtra("title",getTitleStr())
+            serviceIntent.putExtra("title", getTitleStr())
             startService(serviceIntent)
 
             onSuccess()

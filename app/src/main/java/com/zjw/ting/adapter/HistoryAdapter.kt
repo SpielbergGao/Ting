@@ -9,7 +9,7 @@ import com.zjw.ting.R
 import com.zjw.ting.bean.AudioHistory
 import kotlinx.android.synthetic.main.item_history.view.*
 
-class HistoryAdapter(var items: List<AudioHistory>?, private val context: Context) :
+class HistoryAdapter(var items: ArrayList<AudioHistory>?, private val context: Context) :
     RecyclerView.Adapter<HistoryAdapter.HistoryHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryHolder {
