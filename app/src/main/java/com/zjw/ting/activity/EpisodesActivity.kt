@@ -1,7 +1,6 @@
 package com.zjw.ting.activity
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -14,9 +13,9 @@ import com.blankj.rxbus.RxBus
 import com.trello.rxlifecycle3.android.lifecycle.kotlin.bindUntilEvent
 import com.zjw.ting.R
 import com.zjw.ting.adapter.EposodesAdapter
-import com.zjw.ting.bean.AudioHistory
 import com.zjw.ting.bean.AudioHistorys
-import com.zjw.ting.net.TingShuUtil
+import com.zjw.ting.bean.AudioInfo
+import com.zjw.ting.net.TingShuUtil2
 import com.zjw.ting.util.ACache
 import es.dmoral.toasty.Toasty
 import io.reactivex.Observable
@@ -30,7 +29,7 @@ import kotlinx.android.synthetic.main.activity_search_result.swipeLayout
 
 class EpisodesActivity : AppCompatActivity(), LifecycleOwner {
 
-    private val audioInfos = ArrayList<TingShuUtil.AudioInfo>()
+    private val audioInfos = ArrayList<AudioInfo>()
     private lateinit var adapter: EposodesAdapter
     private var code = 100
 
@@ -52,7 +51,7 @@ class EpisodesActivity : AppCompatActivity(), LifecycleOwner {
         adapter = EposodesAdapter(audioInfos, this@EpisodesActivity)
         rv.adapter = adapter
         adapter.onItemClickListener = object : EposodesAdapter.OnItemClickListener {
-            override fun onItemClick(item: TingShuUtil.AudioInfo, position: Int) {
+            override fun onItemClick(item: AudioInfo, position: Int) {
                 //跳转到播放页面
                 val intent = Intent(this@EpisodesActivity, AudioPlayActivity::class.java)
                 intent.putExtra("url", item.url)
@@ -113,10 +112,10 @@ class EpisodesActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     @SuppressLint("CheckResult")
-    private fun loadData(onSuccess: (list: ArrayList<TingShuUtil.AudioInfo>) -> Unit, onError: (e: Throwable) -> Unit) {
-        Observable.create(ObservableOnSubscribe<ArrayList<TingShuUtil.AudioInfo>> {
+    private fun loadData(onSuccess: (list: ArrayList<AudioInfo>) -> Unit, onError: (e: Throwable) -> Unit) {
+        Observable.create(ObservableOnSubscribe<ArrayList<AudioInfo>> {
             try {
-                val urls = TingShuUtil.getEpisodesUrls(intent.getStringExtra("url"))
+                val urls = TingShuUtil2.getEpisodesUrls(intent.getStringExtra("url"))
                 urls?.let { infos ->
                     it.onNext(infos)
                 }
@@ -135,17 +134,6 @@ class EpisodesActivity : AppCompatActivity(), LifecycleOwner {
             })
     }
 
-    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == code) {
-            val bookUrl = data?.extras?.getString("bookUrl")
-            bookUrl?.let {
-                if (it == intent.getStringExtra("url")) {
-                    setHistoryUi()
-                }
-            }
-        }
-    }*/
 
     override fun onDestroy() {
         // 注销

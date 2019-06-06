@@ -1,16 +1,16 @@
 package com.zjw.ting.adapter
 
 import android.content.Context
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
+import androidx.recyclerview.widget.RecyclerView
 import com.zjw.ting.R
-import com.zjw.ting.net.TingShuUtil
+import com.zjw.ting.bean.AudioInfo
+import com.zjw.ting.net.TingShuUtil.useDefaultTingShuUtil
 import kotlinx.android.synthetic.main.item_search_result.view.*
 
-class SearchResultAdapter(var items: ArrayList<TingShuUtil.AudioInfo>?, private val context: Context) :
+class SearchResultAdapter(var items: ArrayList<AudioInfo>?, private val context: Context) :
     RecyclerView.Adapter<SearchResultAdapter.ResultViewHolder>() {
 
     var onItemClickListener: OnItemClickListener? = null
@@ -40,16 +40,22 @@ class SearchResultAdapter(var items: ArrayList<TingShuUtil.AudioInfo>?, private 
 
     inner class ResultViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        fun set(item: TingShuUtil.AudioInfo) {
+        fun set(item: AudioInfo) {
             //UI setting code
-            val split = item.info.trim().split(" ")
-            itemView.titleTv.text = split[0]
-            itemView.titleInfoTv.text = split[1]
+            if (useDefaultTingShuUtil) {
+                val split = item.info.trim().split(" ")
+                itemView.titleTv.text = split[0]
+                itemView.titleInfoTv.text = split[1]
+            }else{
+                val split = item.info.trim().split(" / ")
+                itemView.titleTv.text = split[0]
+                itemView.titleInfoTv.text = split[1]
+            }
         }
     }
 
 
     interface OnItemClickListener {
-        fun onItemClick(item: TingShuUtil.AudioInfo, position: Int)
+        fun onItemClick(item: AudioInfo, position: Int)
     }
 }

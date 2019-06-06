@@ -11,7 +11,8 @@ import androidx.lifecycle.LifecycleOwner
 import com.trello.rxlifecycle3.android.lifecycle.kotlin.bindUntilEvent
 import com.zjw.ting.R
 import com.zjw.ting.adapter.SearchResultAdapter
-import com.zjw.ting.net.TingShuUtil
+import com.zjw.ting.bean.AudioInfo
+import com.zjw.ting.net.TingShuUtil2
 import es.dmoral.toasty.Toasty
 import io.reactivex.Observable
 import io.reactivex.ObservableOnSubscribe
@@ -22,7 +23,7 @@ import top.defaults.drawabletoolbox.DrawableBuilder
 
 class SearchResultActivity : AppCompatActivity(), LifecycleOwner {
 
-    private val audioInfos = ArrayList<TingShuUtil.AudioInfo>()
+    private val audioInfos = ArrayList<AudioInfo>()
     private lateinit var adapter: SearchResultAdapter
     private var pageIndex = 0L
 
@@ -57,7 +58,7 @@ class SearchResultActivity : AppCompatActivity(), LifecycleOwner {
             )
         }
         adapter.onItemClickListener = object : SearchResultAdapter.OnItemClickListener {
-            override fun onItemClick(item: TingShuUtil.AudioInfo, position: Int) {
+            override fun onItemClick(item: AudioInfo, position: Int) {
                 //跳转到集数页面
                 val intent = Intent(this@SearchResultActivity, EpisodesActivity::class.java)
                 intent.putExtra("url", item.url)
@@ -94,10 +95,10 @@ class SearchResultActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     @SuppressLint("CheckResult")
-    private fun loadData(page: Long, onSuccess: (list: ArrayList<TingShuUtil.AudioInfo>) -> Unit, onError: (e: Throwable) -> Unit) {
-        Observable.create(ObservableOnSubscribe<ArrayList<TingShuUtil.AudioInfo>> {
+    private fun loadData(page: Long, onSuccess: (list: ArrayList<AudioInfo>) -> Unit, onError: (e: Throwable) -> Unit) {
+        Observable.create(ObservableOnSubscribe<ArrayList<AudioInfo>> {
             try {
-                val urls = TingShuUtil.getSearchUrls(intent.getStringExtra("keyWord"), page)
+                val urls = TingShuUtil2.getSearchUrls(intent.getStringExtra("keyWord"), page)
                 urls?.let { infos ->
                     it.onNext(infos)
                 }

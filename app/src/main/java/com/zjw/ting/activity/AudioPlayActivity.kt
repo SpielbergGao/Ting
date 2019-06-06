@@ -16,8 +16,10 @@ import com.trello.rxlifecycle3.android.lifecycle.kotlin.bindUntilEvent
 import com.zjw.ting.R
 import com.zjw.ting.bean.AudioHistory
 import com.zjw.ting.bean.AudioHistorys
+import com.zjw.ting.bean.AudioInfo
 import com.zjw.ting.bean.Event
 import com.zjw.ting.net.TingShuUtil
+import com.zjw.ting.net.TingShuUtil2
 import com.zjw.ting.notification.*
 import com.zjw.ting.util.ACache
 import es.dmoral.toasty.Toasty
@@ -34,7 +36,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
 
     @Volatile
-    private var mAudioInfo: TingShuUtil.AudioInfo? = null
+    private var mAudioInfo: AudioInfo? = null
     private var position: Int = 1
     private var mCurrentUrl: String = ""
     private var canChangeUrl = true
@@ -147,7 +149,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun setTitleAndPlay(it: TingShuUtil.AudioInfo, needSeekTo: Boolean, onSuccess: () -> Unit = {}) {
+    private fun setTitleAndPlay(it: AudioInfo, needSeekTo: Boolean, onSuccess: () -> Unit = {}) {
         GSYVideoManager.releaseAllVideos()
         if (this.isFinishing || this.isDestroyed) {
             return
@@ -174,15 +176,23 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
         } else {
             canChangeUrl = true
-            var p = Pattern.compile("第\\d+集")
-            var m = p.matcher(it.currentPosstion)
-            if (m.find()) {
-                position = m.group(0).replace("第", "").replace("集", "").toInt()
+            if (TingShuUtil.useDefaultTingShuUtil) {
+                var p = Pattern.compile("第\\d+集")
+                var m = p.matcher(it.currentPosstion)
+                if (m.find()) {
+                    position = m.group(0).replace("第", "").replace("集", "").toInt()
+                }
+            }else{
+                var p =  Pattern.compile("\\d+.mp3")
+                var m = p.matcher(it.wrapUrl)
+                if (m.find()) {
+                    position = m.group(0).replace(".mp3", "").toInt()
+                }
             }
 
             val serviceIntent = Intent(applicationContext, NotificationService::class.java)
             serviceIntent.action = START_SERVICE
-            serviceIntent.putExtra("title",getTitleStr())
+            serviceIntent.putExtra("title", getTitleStr())
             startService(serviceIntent)
 
             onSuccess()
@@ -232,11 +242,11 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     @SuppressLint("CheckResult")
-    private fun loadData(episodesUrl: String, onSuccess: (url: TingShuUtil.AudioInfo) -> Unit, onError: (e: Throwable) -> Unit) {
-        Observable.create(ObservableOnSubscribe<TingShuUtil.AudioInfo> {
+    private fun loadData(episodesUrl: String, onSuccess: (url: AudioInfo) -> Unit, onError: (e: Throwable) -> Unit) {
+        Observable.create(ObservableOnSubscribe<AudioInfo> {
             try {
                 if (!this.isFinishing && !this.isDestroyed) {
-                    mAudioInfo = TingShuUtil.getAudioUrl(episodesUrl)
+                    mAudioInfo = TingShuUtil2.getAudioUrl(episodesUrl)
                     mAudioInfo?.let { info ->
                         it.onNext(info)
                     }

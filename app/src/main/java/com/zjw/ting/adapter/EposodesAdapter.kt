@@ -1,16 +1,15 @@
 package com.zjw.ting.adapter
 
 import android.content.Context
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
+import androidx.recyclerview.widget.RecyclerView
 import com.zjw.ting.R
-import com.zjw.ting.net.TingShuUtil
+import com.zjw.ting.bean.AudioInfo
 import kotlinx.android.synthetic.main.item_episodes.view.*
 
-class EposodesAdapter(var items: ArrayList<TingShuUtil.AudioInfo>?, private val context: Context) :
+class EposodesAdapter(var items: ArrayList<AudioInfo>?, private val context: Context) :
     RecyclerView.Adapter<EposodesAdapter.ResultViewHolder>() {
 
     var onItemClickListener: OnItemClickListener? = null
@@ -40,7 +39,7 @@ class EposodesAdapter(var items: ArrayList<TingShuUtil.AudioInfo>?, private val 
 
     inner class ResultViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        fun set(item: TingShuUtil.AudioInfo) {
+        fun set(item: AudioInfo) {
             //UI setting code
             itemView.episodesTv.text = item.info
         }
@@ -48,6 +47,6 @@ class EposodesAdapter(var items: ArrayList<TingShuUtil.AudioInfo>?, private val 
 
 
     interface OnItemClickListener {
-        fun onItemClick(item: TingShuUtil.AudioInfo, position: Int)
+        fun onItemClick(item: AudioInfo, position: Int)
     }
 }
