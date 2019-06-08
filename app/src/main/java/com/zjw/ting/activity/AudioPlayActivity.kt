@@ -43,6 +43,15 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            var bundleIntent = Intent()
+            bundleIntent.putExtra("url", savedInstanceState.getString("url"))
+            bundleIntent.putExtra("position", savedInstanceState.getInt("position"))
+            bundleIntent.putExtra("currentPosition", savedInstanceState.getLong("currentPosition"))
+            bundleIntent.putExtra("bookUrl", savedInstanceState.getString("bookUrl"))
+            bundleIntent.putExtra("info", savedInstanceState.getString( "info"))
+            intent = bundleIntent
+        }
         setContentView(R.layout.activity_audio_play)
 
         // videoPlayer.setUp("http://9890.vod.myqcloud.com/9890_4e292f9a3dd011e6b4078980237cc3d3.f20.mp4", true, "测试视频");
@@ -180,7 +189,6 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             serviceIntent.action = START_SERVICE
             serviceIntent.putExtra("title", getTitleStr())
             startService(serviceIntent)
-
             onSuccess()
             titleTv.text = getTitleStr()
             Toasty.success(this@AudioPlayActivity, "url ${it.url}").show()
@@ -191,6 +199,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
                 videoPlayer.seekOnStart = 0
             }
             videoPlayer.startPlayLogic()
+            setAudioHistory()
         }
     }
 
@@ -274,7 +283,25 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
     override fun onSaveInstanceState(outState: Bundle) {
         //记录当前播放进度
-        setAudioHistory()
+        var history = ACache.get(this).getAsObject("history")
+        if (history == null) {
+            history = AudioHistorys()
+        }
+        history as AudioHistorys
+        history.map[intent.getStringExtra("bookUrl")] =
+            AudioHistory(
+                getTitleStr(),
+                videoPlayer.gsyVideoManager.currentPosition,
+                intent.getStringExtra("bookUrl"),
+                episodesUrl,
+                position
+            )
+        ACache.get(this).put("history", history)
+        outState.putString("url", episodesUrl)
+        outState.putLong("currentPosition", videoPlayer.gsyVideoManager.currentPosition)
+        outState.putInt("position", position)
+        outState.putString("bookUrl", intent.getStringExtra("bookUrl"))
+        outState.putString("info", getTitleStr())
         // 发送 String 类型事件
         RxBus.getDefault().post(intent.getStringExtra("bookUrl"))
         super.onSaveInstanceState(outState)
