@@ -1,6 +1,7 @@
 package com.zjw.ting.bean;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class AudioHistory implements Serializable {
     private String info;
@@ -8,13 +9,15 @@ public class AudioHistory implements Serializable {
     private String bookUrl;
     private long currentPosition;
     private int position;
+    private String sourceHost;
 
-    public AudioHistory(String info, long currentPosition, String bookUrl ,String episodesUrl, int position) {
+    public AudioHistory(String info, long currentPosition, String bookUrl, String episodesUrl, int position, String sourceHost) {
         this.info = info;
         this.episodesUrl = episodesUrl;
         this.bookUrl = bookUrl;
         this.currentPosition = currentPosition;
         this.position = position;
+        this.sourceHost = sourceHost;
     }
 
 
@@ -56,5 +59,26 @@ public class AudioHistory implements Serializable {
 
     public void setBookUrl(String bookUrl) {
         this.bookUrl = bookUrl;
+    }
+
+    public String getSourceHost() {
+        return sourceHost;
+    }
+
+    public void setSourceHost(String sourceHost) {
+        this.sourceHost = sourceHost;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AudioHistory)) return false;
+        AudioHistory that = (AudioHistory) o;
+        return Objects.equals(getBookUrl(), that.getBookUrl());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getInfo(), getEpisodesUrl(), getBookUrl(), getCurrentPosition(), getPosition(), getSourceHost());
     }
 }

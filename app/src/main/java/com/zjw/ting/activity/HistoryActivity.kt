@@ -12,6 +12,7 @@ import com.zjw.ting.R
 import com.zjw.ting.adapter.HistoryAdapter
 import com.zjw.ting.bean.AudioHistory
 import com.zjw.ting.bean.AudioHistorys
+import com.zjw.ting.net.TingShuUtil
 import com.zjw.ting.util.ACache
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_history.*
@@ -37,7 +38,9 @@ class HistoryActivity : AppCompatActivity() {
         }
         history?.let {
             it as AudioHistorys
-            val values = it.map.values
+            val values = it.map.values.filter { item ->
+                TingShuUtil.sourceHost == item.sourceHost
+            }
             audioHistoryList.addAll(values)
 
             rv.isItemViewSwipeEnabled = true
@@ -92,7 +95,16 @@ class HistoryActivity : AppCompatActivity() {
                 XPopup.Builder(this@HistoryActivity).asConfirm(
                     "清空听书记录", "是否要清空记录"
                 ) {
-                    ACache.get(this@HistoryActivity).remove("history")
+                    //ACache.get(this@HistoryActivity).remove("history")
+                    history = ACache.get(this@HistoryActivity).getAsObject("history")
+                    history?.let {
+                        it as AudioHistorys
+                        val values = it.map.values.filter { item ->
+                            TingShuUtil.sourceHost == item.sourceHost
+                        }
+                        it.map.values.removeAll(values)
+                        ACache.get(this@HistoryActivity).put("history", it)
+                    }
                     // 发送 String 类型事件
                     RxBus.getDefault().post("update history")
                     adapter.items?.clear()
@@ -110,7 +122,9 @@ class HistoryActivity : AppCompatActivity() {
                     history = ACache.get(this@HistoryActivity).getAsObject("history")
                     history?.let {
                         it as AudioHistorys
-                        val values = it.map.values
+                        val values = it.map.values.filter { item ->
+                            TingShuUtil.sourceHost == item.sourceHost
+                        }
                         audioHistoryList = ArrayList<AudioHistory>()
                         audioHistoryList.addAll(values)
                         adapter.items = audioHistoryList

@@ -1,10 +1,10 @@
 package com.zjw.ting.net;
 
+import com.google.common.base.Splitter;
 import com.zjw.ting.bean.AudioInfo;
 import com.zjw.ting.util.JSEngine;
 
 import org.jsoup.Connection;
-import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -13,13 +13,14 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class TingShuUtil2 {
     //https://m.mp3book.cn/
     public static String httpHost = "https://m.mp3book.cn/";
-    public static String host = "https://m.mp3book.cn";
-    public static String searchUrl = "https://m.mp3book.cn/search.php?keywords=";
-    public static long countPage = -1;
+    private static String host = "https://m.mp3book.cn";
+    private static String searchUrl = "https://m.mp3book.cn/search.php?keywords=";
+    private static long countPage = -1;
 
     /**
      * 获取搜索到的作品列表信息
@@ -77,11 +78,6 @@ public class TingShuUtil2 {
 
             final Connection connection = Jsoup.connect(url);
             setCommonHeader(connection);
-
-            // path   /player.php?mov_id=1022&look_id=4&player=mp
-            // referer      https://m.mp3book.cn/player.php?mov_id=1022&look_id=1&player=mp
-            //connection.header("path", searchUrl + keyParam + pageParam);
-            //  connection.header("referer", httpHost + "/");
             final Document doc = connection.get();
 
             Element listDiv = doc.select("div.playlist").first();
@@ -111,9 +107,12 @@ public class TingShuUtil2 {
             final Connection connection = Jsoup.connect(url);
             setCommonHeader(connection);
             connection.header("path", url.replace(host, ""));
+
+            final String format = "https://m.mp3book.cn/player.php?mov_id=%s&look_id=1&player=mp";
+            final String mov_id = getParam(url, "mov_id");
+            connection.header("referer", String.format(format, mov_id));
             final Document doc = connection.get();
 
-            //获取上下集的html
             //获取上下集的html
             Element preUrlElment = doc.select("a:contains(上一章)").first();
             String preUrl = preUrlElment.attr("href").trim();
@@ -126,6 +125,10 @@ public class TingShuUtil2 {
             if (nextUrl.length() > 0) {
                 audioInfo.setNextUrl(nextUrl.replace("&amp;", "&"));
             }
+
+            //获取当前集数
+            final String look_id = getParam(url, "look_id");
+            audioInfo.setCurrentPosstion(look_id);
 
             //获取当前集数
             String currentUrl = "";
@@ -144,21 +147,7 @@ public class TingShuUtil2 {
                     wrapUrl = trim.split("\"")[1];
                 }
             }
-
-            //try {
-            //    final Connection connectSrc = Jsoup.connect(currentUrl);
-            //    setCommonHeader(connectSrc);
-            //    connectSrc.method(Connection.Method.HEAD);
-            //    Connection.Response head = connectSrc.execute();
-            //    audioInfo.setUrl(currentUrl);
-            //} catch (HttpStatusException ex) {
-            //    audioInfo.setUrl(wrapUrl);
-            //} catch (IOException ioEx) {
-            //    audioInfo.setUrl(wrapUrl);
-            //}
-
             audioInfo.setUrl(currentUrl);
-            //audioInfo.setUrl(wrapUrl);
             audioInfo.setWrapUrl(wrapUrl);
             // System.out.println(currentUrl);
         } catch (Throwable throwable) {
@@ -166,6 +155,12 @@ public class TingShuUtil2 {
             throwable.printStackTrace();
         }
         return audioInfo;
+    }
+
+    public static String getParam(String url, String name) {
+        String params = url.substring(url.indexOf("?") + 1);
+        Map<String, String> split = Splitter.on("&").withKeyValueSeparator("=").split(params);
+        return split.get(name);
     }
 
     private static final String GET_URL = "function getUrl(p){\n" +
@@ -182,7 +177,7 @@ public class TingShuUtil2 {
     private static void setCommonHeader(Connection connect) {
         connect.header("authority", "m.mp3book.cn");
         connect.header("scheme", "https");
-        connect.header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
+        connect.header("User-Agent", "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Mobile Safari/537.36");
         connect.header("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
         connect.header("accept-encoding", "gzip, deflate, br");
         connect.header("accept-language", "zh-CN,zh;q=0.9,en;q=0.8");

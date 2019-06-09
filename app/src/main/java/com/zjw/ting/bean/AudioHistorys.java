@@ -13,11 +13,4 @@ public class AudioHistorys implements Serializable {
     public void setMap(LinkedHashMap<String, AudioHistory> map) {
         this.map = map;
     }
-
-    @Override
-    public String toString() {
-        return "AudioHistorys{" +
-                "map=" + map +
-                '}';
-    }
 }

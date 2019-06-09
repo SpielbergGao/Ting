@@ -3,6 +3,8 @@ package com.zjw.ting.activity
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -14,9 +16,13 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.eye.cool.permission.PermissionHelper
+import com.lxj.xpopup.XPopup
 import com.tangguna.searchbox.library.cache.HistoryCache
 import com.tangguna.searchbox.library.callback.onSearchCallBackListener
 import com.zjw.ting.R
+import com.zjw.ting.net.TingShuUtil
+import com.zjw.ting.net.TingShuUtil2
+import com.zjw.ting.util.ACache
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_main.*
 import top.defaults.drawabletoolbox.DrawableBuilder
@@ -107,6 +113,42 @@ class MainActivity : AppCompatActivity() {
             //跳转页面
             val intent = Intent(this@MainActivity, HistoryActivity::class.java)
             startActivity(intent)
+        }
+
+        val sourceBtDrawable = DrawableBuilder()
+            .rectangle()
+            .rounded()
+            .solidColor(ContextCompat.getColor(this, R.color.colorPrimary))
+            .solidColorPressed(ContextCompat.getColor(this, R.color.colorPrimaryDark))
+            .build()
+        sourceBt.background = sourceBtDrawable
+        sourceBt.setOnClickListener {
+            //切换播放源
+            val source = ACache.get(this@MainActivity).getAsString("source")
+            XPopup.Builder(this@MainActivity)
+                .maxWidth(600)
+                .asCenterList(
+                    "当前host:${if (!TextUtils.isEmpty(source)) source.split("://")[1] else ""} ",
+                    arrayOf(TingShuUtil.httpHost, TingShuUtil2.httpHost)
+                ) { _, text ->
+                    if (text == source) {
+                        Toasty.warning(this@MainActivity, "切换源与当前一致~").show()
+                        return@asCenterList
+                    }
+                    if (TextUtils.isEmpty(source) || text != source) {
+                        Toasty.success(this@MainActivity, "切源为$text~，即将自动重启app，请稍后").show()
+                        ACache.get(this@MainActivity).put("source", text)
+                        //自动重启
+                        val restartIntent = packageManager.getLaunchIntentForPackage(application.packageName)
+                        val mPendingIntentId = 123456
+                        val mPendingIntent =
+                            PendingIntent.getActivity(this@MainActivity, mPendingIntentId, restartIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+                        val mgr = this@MainActivity.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 1000, mPendingIntent)
+                        System.exit(0)
+                    }
+                }
+                .show()
         }
     }
 

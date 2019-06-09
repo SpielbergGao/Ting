@@ -2,7 +2,6 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -24,6 +23,19 @@
         android:layout_marginBottom="15dp"
         android:padding="5dp"
         android:text="我的听书记录"
+        android:textColor="@android:color/white"
+        />
+
+    <Button
+        android:id="@+id/sourceBt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="15dp"
+        android:layout_marginBottom="15dp"
+        android:padding="5dp"
+        android:text="切换播放源"
         android:textColor="@android:color/white"
         />
 </RelativeLayout>

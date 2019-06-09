@@ -49,7 +49,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             bundleIntent.putExtra("position", savedInstanceState.getInt("position"))
             bundleIntent.putExtra("currentPosition", savedInstanceState.getLong("currentPosition"))
             bundleIntent.putExtra("bookUrl", savedInstanceState.getString("bookUrl"))
-            bundleIntent.putExtra("info", savedInstanceState.getString( "info"))
+            bundleIntent.putExtra("info", savedInstanceState.getString("info"))
             intent = bundleIntent
         }
         setContentView(R.layout.activity_audio_play)
@@ -219,7 +219,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         videoPlayer.onVideoResume()
     }
 
-    private fun setAudioHistory() {
+    private fun setAudioHistory(outState: Bundle? = null) {
         var history = ACache.get(this).getAsObject("history")
         if (history == null) {
             history = AudioHistorys()
@@ -231,9 +231,17 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
                 videoPlayer.gsyVideoManager.currentPosition,
                 intent.getStringExtra("bookUrl"),
                 episodesUrl,
-                position
+                position,
+                TingShuUtil.sourceHost
             )
         ACache.get(this).put("history", history)
+        outState?.let {
+            it.putString("url", episodesUrl)
+            it.putLong("currentPosition", videoPlayer.gsyVideoManager.currentPosition)
+            it.putInt("position", position)
+            it.putString("bookUrl", intent.getStringExtra("bookUrl"))
+            it.putString("info", getTitleStr())
+        }
     }
 
     @SuppressLint("CheckResult")
@@ -283,25 +291,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
     override fun onSaveInstanceState(outState: Bundle) {
         //记录当前播放进度
-        var history = ACache.get(this).getAsObject("history")
-        if (history == null) {
-            history = AudioHistorys()
-        }
-        history as AudioHistorys
-        history.map[intent.getStringExtra("bookUrl")] =
-            AudioHistory(
-                getTitleStr(),
-                videoPlayer.gsyVideoManager.currentPosition,
-                intent.getStringExtra("bookUrl"),
-                episodesUrl,
-                position
-            )
-        ACache.get(this).put("history", history)
-        outState.putString("url", episodesUrl)
-        outState.putLong("currentPosition", videoPlayer.gsyVideoManager.currentPosition)
-        outState.putInt("position", position)
-        outState.putString("bookUrl", intent.getStringExtra("bookUrl"))
-        outState.putString("info", getTitleStr())
+        setAudioHistory(outState)
         // 发送 String 类型事件
         RxBus.getDefault().post(intent.getStringExtra("bookUrl"))
         super.onSaveInstanceState(outState)

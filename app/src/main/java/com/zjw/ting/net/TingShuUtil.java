@@ -13,7 +13,6 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -21,11 +20,11 @@ import java.util.ArrayList;
 public class TingShuUtil {
     //有声听书吧
     public static String httpHost = "https://m.ysts8.com";
-    public static String host = "m.ysts8.com";
-    public static String searchUrl = "/so.asp?keyword=";
-    public static long countPage = -1;
+    private static String host = "m.ysts8.com";
+    private static String searchUrl = "/so.asp?keyword=";
+    private static long countPage = -1;
 
-    public static boolean useDefaultTingShuUtil = true;
+    public static String sourceHost = httpHost;
 
     /**
      * 获取搜索到的作品列表信息
@@ -36,6 +35,9 @@ public class TingShuUtil {
      * @throws IOException
      */
     public static ArrayList<AudioInfo> getSearchUrls(String keyWord, long page) {
+        if (!httpHost.equals(sourceHost)) {
+            return TingShuUtil2.getSearchUrls(keyWord, page);
+        }
         ArrayList<AudioInfo> audioInfos = new ArrayList<>();
         String keyParam = null;
         try {
@@ -63,7 +65,7 @@ public class TingShuUtil {
             for (Element urlListElement : urlListElements) {
                 //名称 状态
                 //urlListElement.text() 代表该节点的内容文本以及其嵌套的子节点的内容文本
-                audioInfos.add(new AudioInfo(urlListElement.childNodes().get(1).outerHtml() + " " + urlListElement.childNodes().get(2).childNode(0).outerHtml(), httpHost + urlListElement.attr("href")));
+                audioInfos.add(new AudioInfo(urlListElement.childNodes().get(1).outerHtml() + " / " + urlListElement.childNodes().get(2).childNode(0).outerHtml(), httpHost + urlListElement.attr("href")));
             }
         } catch (Throwable throwable) {
             audioInfos = null;
@@ -82,6 +84,9 @@ public class TingShuUtil {
      * @throws IOException
      */
     public static ArrayList<AudioInfo> getEpisodesUrls(String url) {
+        if (!httpHost.equals(sourceHost)) {
+            return TingShuUtil2.getEpisodesUrls(url);
+        }
         ArrayList<AudioInfo> audioInfos = new ArrayList<>();
         try {
             final Connection connection = Jsoup.connect(url);
@@ -114,6 +119,9 @@ public class TingShuUtil {
      * @throws IOException
      */
     public static AudioInfo getAudioUrl(String url) {
+        if (!httpHost.equals(sourceHost)) {
+            return TingShuUtil2.getAudioUrl(url);
+        }
         AudioInfo audioInfo = new AudioInfo(url);
         try {
             final Connection connection = Jsoup.connect(url);
@@ -174,20 +182,13 @@ public class TingShuUtil {
     }
 
     private static void setCommonHeader(Connection connect) {
-        /*Date date = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
-        final String format = dateFormat.format(date.getTime());
-        connect.header("if-modified-since", format);*/
         connect.header("cache-control", "max-age=0");
         connect.header("authority", host);
         connect.header("scheme", "https");
-        //connect.header("cookie", "ASPSESSIONIDAWCQBSBB=PMAAPIHCAHGKNCGENGPIEPAK; startime=1");
-        //connect.header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
         connect.header("User-Agent", "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Mobile Safari/537.36");
         connect.header("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
         connect.header("accept-encoding", "gzip, deflate, br");
         connect.header("accept-language", "zh-CN,zh;q=0.9,en;q=0.8");
         connect.header("upgrade-insecure-requests", "1");
-        //connect.header("Referrer Policy", "no-referrer-when-downgrade");
     }
 }

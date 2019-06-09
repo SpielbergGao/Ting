@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.zjw.ting.R
 import com.zjw.ting.bean.AudioInfo
-import com.zjw.ting.net.TingShuUtil.useDefaultTingShuUtil
 import kotlinx.android.synthetic.main.item_search_result.view.*
 
 class SearchResultAdapter(var items: ArrayList<AudioInfo>?, private val context: Context) :
@@ -42,15 +41,9 @@ class SearchResultAdapter(var items: ArrayList<AudioInfo>?, private val context:
 
         fun set(item: AudioInfo) {
             //UI setting code
-            if (useDefaultTingShuUtil) {
-                val split = item.info.trim().split(" ")
-                itemView.titleTv.text = split[0]
-                itemView.titleInfoTv.text = split[1]
-            }else{
-                val split = item.info.trim().split(" / ")
-                itemView.titleTv.text = split[0]
-                itemView.titleInfoTv.text = split[1]
-            }
+            val split = item.info.trim().split(" / ")
+            itemView.titleTv.text = split[0]
+            itemView.titleInfoTv.text = split[1]
         }
     }
 
