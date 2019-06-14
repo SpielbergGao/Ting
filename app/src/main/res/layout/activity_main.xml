@@ -13,29 +13,36 @@
         app:search_hint="输入搜索内容">
     </com.tangguna.searchbox.library.widget.SearchLayout>
 
-    <Button
-        android:id="@+id/bt"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
         android:layout_marginRight="15dp"
         android:layout_marginBottom="15dp"
-        android:padding="5dp"
-        android:text="我的听书记录"
-        android:textColor="@android:color/white"
-        />
+        android:gravity="center"
+        android:orientation="vertical"
+        >
 
-    <Button
-        android:id="@+id/sourceBt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginLeft="15dp"
-        android:layout_marginBottom="15dp"
-        android:padding="5dp"
-        android:text="切换播放源"
-        android:textColor="@android:color/white"
-        />
+        <Button
+            android:id="@+id/sourceBt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text="切换播放源"
+            android:textColor="@android:color/white"
+            />
+
+        <Button
+            android:id="@+id/bt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:padding="5dp"
+            android:text="我的听书记录"
+            android:textColor="@android:color/white"
+            />
+
+
+    </LinearLayout>
 </RelativeLayout>

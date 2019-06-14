@@ -42,7 +42,7 @@ class HistoryActivity : AppCompatActivity() {
                 TingShuUtil.sourceHost == item.sourceHost
             }
             audioHistoryList.addAll(values)
-
+            audioHistoryList.reverse()
             rv.isItemViewSwipeEnabled = true
             val adapter = HistoryAdapter(audioHistoryList, this)
             rv.setOnItemMoveListener(object : OnItemMoveListener {
