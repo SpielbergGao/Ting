@@ -1,5 +1,6 @@
 package com.zjw.ting.notification
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -9,24 +10,11 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Build
-import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import com.zjw.ting.R
 import com.zjw.ting.activity.AudioPlayActivity
-
-
-
-
-const val NOTIFY_PLAY = "NOTIFY_PLAY"
-const val NOTIFY_PAUSE = "NOTIFY_PAUSE"
-const val NOTIFY_STOP = "NOTIFY_STOP"
-const val NOTIFY_NEXT = "NOTIFY_NEXT"
-const val NOTIFY_PREVIOUS = "NOTIFY_PREVIOUS"
-const val START_SERVICE = "START_SERVICE"
-
-const val NOTIFICATION_ID = 99
 
 class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayActivity::class.java) {
 
@@ -34,14 +22,6 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
     private lateinit var smallView: RemoteViews
     private var notificationManager: NotificationManager? = null
     private var notificationChannel: NotificationChannel? = null
-
-    private val CHANNEL_ID = "com.murgupluoglu.notificationdemo"
-    private val CHANNEL_NAME = "Test notification"
-
-    private val NOTIFICATION_TITLE = "Music Player"
-    private val NOTIFICATION_TEXT = "Control Audio"
-    private val NOTIFICATION_TICKER = "Music Player Playing Now."
-    private val NOTIFICATION_STATUSBAR_PLAY_ICON = R.drawable.ic_stat_big_content
 
     fun showNotification(
         context: Context,
@@ -96,7 +76,6 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
         return notification
     }
 
-
     private fun setListeners(
         bigView: RemoteViews,
         smallView: RemoteViews,
@@ -127,7 +106,7 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
         bigView.setTextViewText(R.id.status_bar_album_name, albumName)
     }
 
-    fun setTitleText(title :String){
+    fun setTitleText(title: String) {
         bigView.setTextViewText(R.id.status_bar_track_name, title)
     }
 
@@ -149,6 +128,7 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
      * @param [notificationTicker] notification ticker text for accessibility.
      * @return the PendingIntent to be used on this notification.
      */
+    @SuppressLint("WrongConstant")
     private fun getNotificationBuilder(
         context: Context,
         notificationTitle: String,
@@ -201,4 +181,27 @@ class NotificationGenerator(var notificationIntentClass: Class<*> = AudioPlayAct
         resultIntent.addCategory(Intent.CATEGORY_LAUNCHER)
         return PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
+
+    companion object {
+
+        const val NOTIFY_PLAY = "NOTIFY_PLAY"
+        const val NOTIFY_PAUSE = "NOTIFY_PAUSE"
+        const val NOTIFY_STOP = "NOTIFY_STOP"
+        const val NOTIFY_NEXT = "NOTIFY_NEXT"
+        const val NOTIFY_PREVIOUS = "NOTIFY_PREVIOUS"
+        const val START_SERVICE = "START_SERVICE"
+
+        const val NOTIFICATION_ID = 99
+
+
+        private val CHANNEL_ID = "com.murgupluoglu.notificationdemo"
+        private val CHANNEL_NAME = "Test notification"
+
+        private val NOTIFICATION_TITLE = "Music Player"
+        private val NOTIFICATION_TEXT = "Control Audio"
+        private val NOTIFICATION_TICKER = "Music Player Playing Now."
+        private val NOTIFICATION_STATUSBAR_PLAY_ICON = R.drawable.ic_stat_big_content
+
+    }
+
 }
