@@ -73,7 +73,7 @@ class EpisodesActivity : AppCompatActivity(), LifecycleOwner {
 
     @SuppressLint("SetTextI18n")
     private fun setHistoryUi() {
-        var history = ACache.get(this).getAsObject("history")
+        val history = ACache.get(this).getAsObject("history")
         history?.let {
             it as AudioHistorys
             val audioHistory = it.map[intent.getStringExtra("url")]

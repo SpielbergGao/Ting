@@ -20,6 +20,11 @@ import com.zjw.ting.bean.AudioInfo
 import com.zjw.ting.bean.Event
 import com.zjw.ting.net.TingShuUtil
 import com.zjw.ting.notification.*
+import com.zjw.ting.notification.NotificationGenerator.Companion.NOTIFY_NEXT
+import com.zjw.ting.notification.NotificationGenerator.Companion.NOTIFY_PLAY
+import com.zjw.ting.notification.NotificationGenerator.Companion.NOTIFY_PREVIOUS
+import com.zjw.ting.notification.NotificationGenerator.Companion.NOTIFY_STOP
+import com.zjw.ting.notification.NotificationGenerator.Companion.START_SERVICE
 import com.zjw.ting.util.ACache
 import es.dmoral.toasty.Toasty
 import io.reactivex.Observable
@@ -32,7 +37,6 @@ import top.defaults.drawabletoolbox.DrawableBuilder
 
 class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
-
     @Volatile
     private var mAudioInfo: AudioInfo? = null
     private var position: Int = 1
@@ -42,9 +46,11 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
-        if (savedInstanceState != null) {
-            var bundleIntent = Intent()
+
+        savedInstanceState?.apply {
+            val bundleIntent = Intent()
             bundleIntent.putExtra("url", savedInstanceState.getString("url"))
             bundleIntent.putExtra("position", savedInstanceState.getInt("position"))
             bundleIntent.putExtra("currentPosition", savedInstanceState.getLong("currentPosition"))
@@ -52,14 +58,18 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             bundleIntent.putExtra("info", savedInstanceState.getString("info"))
             intent = bundleIntent
         }
+
         setContentView(R.layout.activity_audio_play)
 
         // videoPlayer.setUp("http://9890.vod.myqcloud.com/9890_4e292f9a3dd011e6b4078980237cc3d3.f20.mp4", true, "测试视频");
         // var url = "http://180l.ysts8.com:8000/恐怖小说/我当算命先生那些年/014.mp3?1231710044742x1558968690x1231716175402-f002e814b9d51c55addf150d702074fc?3"
         position = intent.getIntExtra("position", 1)
         episodesUrl = intent.getStringExtra("url")
+
         loadData(episodesUrl, onSuccess = {
+
             setTitleAndPlay(it, true)
+
             videoPlayer.setVideoAllCallBack(object : GSYSampleCallBack() {
                 override fun onAutoComplete(url: String?, vararg objects: Any?) {
                     playNext()
@@ -76,7 +86,9 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             .solidColor(ContextCompat.getColor(this, R.color.colorPrimary))
             .solidColorPressed(ContextCompat.getColor(this, R.color.colorPrimaryDark))
             .build()
+
         preBt.background = preBtDrawable
+
         preBt.setOnClickListener {
             playPre()
         }
@@ -88,6 +100,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
             .solidColor(ContextCompat.getColor(this, R.color.colorPrimary))
             .solidColorPressed(ContextCompat.getColor(this, R.color.colorPrimaryDark))
             .build()
+
         nextBt.background = nextBtDrawable
         nextBt.setOnClickListener {
             playNext()
@@ -108,6 +121,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
                                 onVideoResume()
                             }
                         }
+
                     }
                     NOTIFY_NEXT -> {
                         playNext()
@@ -220,10 +234,13 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     private fun setAudioHistory(outState: Bundle? = null) {
+
         var history = ACache.get(this).getAsObject("history")
+
         if (history == null) {
             history = AudioHistorys()
         }
+
         history as AudioHistorys
         history.map[intent.getStringExtra("bookUrl")] =
             AudioHistory(
@@ -234,6 +251,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
                 position,
                 TingShuUtil.sourceHost
             )
+
         ACache.get(this).put("history", history)
         outState?.let {
             it.putString("url", episodesUrl)
@@ -290,10 +308,14 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
+
         //记录当前播放进度
         setAudioHistory(outState)
+
         // 发送 String 类型事件
         RxBus.getDefault().post(intent.getStringExtra("bookUrl"))
+
         super.onSaveInstanceState(outState)
     }
+
 }

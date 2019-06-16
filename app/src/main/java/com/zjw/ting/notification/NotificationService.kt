@@ -1,17 +1,19 @@
 package com.zjw.ting.notification
 
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import com.blankj.rxbus.RxBus
-import com.zjw.ting.activity.AudioPlayActivity
 import com.zjw.ting.bean.Event
+import com.zjw.ting.notification.NotificationGenerator.Companion.NOTIFICATION_ID
+import com.zjw.ting.notification.NotificationGenerator.Companion.NOTIFY_NEXT
+import com.zjw.ting.notification.NotificationGenerator.Companion.NOTIFY_PLAY
+import com.zjw.ting.notification.NotificationGenerator.Companion.NOTIFY_PREVIOUS
+import com.zjw.ting.notification.NotificationGenerator.Companion.NOTIFY_STOP
+import com.zjw.ting.notification.NotificationGenerator.Companion.START_SERVICE
 
 /**
  * In music player, playback of songs has to be done within a service which runs in background

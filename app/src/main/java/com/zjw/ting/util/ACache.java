@@ -23,32 +23,12 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
-
-
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -60,11 +40,12 @@ import java.util.concurrent.atomic.AtomicLong;
  * 可自定义缓存时间
  */
 public class ACache {
+
 	public static final int TIME_HOUR = 60 * 60;
 	public static final int TIME_DAY = TIME_HOUR * 24;
 	private static final int MAX_SIZE = 1000 * 1000 * 50; // 50 mb
 	private static final int MAX_COUNT = Integer.MAX_VALUE; // 不限制存放数据的数量
-	private static Map<String, ACache> mInstanceMap = new HashMap<String, ACache>();
+	private static Map<String, ACache> mInstanceMap = new HashMap<>();
 	private ACacheManager mCache;
 
 	public static ACache get(Context ctx) {
@@ -116,20 +97,28 @@ public class ACache {
 	//判断本地数据是否存在
 	public boolean isExist(String Cachekey,String Datatype){
 		if (!TextUtils.isEmpty(Datatype)){
-			if (Datatype.equals(STRING)){
-				if (!TextUtils.isEmpty(getAsString(Cachekey))) return true;
-			}else if (Datatype.equals(Binary)){
-				if (getAsBinary(Cachekey)!=null) return true;
-			}else if (Datatype.equals(Bitmap)){
-				if (getAsBitmap(Cachekey)!=null) return true;
-			}else if (Datatype.equals(Drawable)){
-				if (getAsDrawable(Cachekey)!=null)return true;
-			}else if (Datatype.equals(Object)){
-				if (getAsObject(Cachekey)!=null) return true;
-			}else if (Datatype.equals(jsonArray)){
-				if (getAsJSONArray(Cachekey)!=null) return true;
-			}else if (Datatype.equals(jsonObject)){
-				if (getAsJSONObject(Cachekey)!=null)return true;
+			switch (Datatype) {
+				case STRING:
+					if (!TextUtils.isEmpty(getAsString(Cachekey))) return true;
+					break;
+				case Binary:
+					if (getAsBinary(Cachekey) != null) return true;
+					break;
+				case Bitmap:
+					if (getAsBitmap(Cachekey) != null) return true;
+					break;
+				case Drawable:
+					if (getAsDrawable(Cachekey) != null) return true;
+					break;
+				case Object:
+					if (getAsObject(Cachekey) != null) return true;
+					break;
+				case jsonArray:
+					if (getAsJSONArray(Cachekey) != null) return true;
+					break;
+				case jsonObject:
+					if (getAsJSONObject(Cachekey) != null) return true;
+					break;
 			}
 		}
 		return false;
@@ -219,13 +208,13 @@ public class ACache {
 		BufferedReader in = null;
 		try {
 			in = new BufferedReader(new FileReader(file));
-			String readString = "";
+			StringBuilder readString = new StringBuilder();
 			String currentLine;
 			while ((currentLine = in.readLine()) != null) {
-				readString += currentLine;
+				readString.append(currentLine);
 			}
-			if (!Utils.isDue(readString)) {
-				return Utils.clearDateInfo(readString);
+			if (!Utils.isDue(readString.toString())) {
+				return Utils.clearDateInfo(readString.toString());
 			} else {
 				removeFile = true;
 				return null;
@@ -889,9 +878,9 @@ public class ACache {
 		private static final char mSeparator = ' ';
 
 		private static String createDateInfo(int second) {
-			String currentTime = System.currentTimeMillis() + "";
+			StringBuilder currentTime = new StringBuilder(System.currentTimeMillis() + "");
 			while (currentTime.length() < 13) {
-				currentTime = "0" + currentTime;
+				currentTime.insert(0, "0");
 			}
 			return currentTime + "-" + second + mSeparator;
 		}
