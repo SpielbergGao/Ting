@@ -127,6 +127,7 @@ class HistoryActivity : AppCompatActivity() {
                         }
                         audioHistoryList = ArrayList<AudioHistory>()
                         audioHistoryList.addAll(values)
+                        audioHistoryList.reverse()
                         adapter.items = audioHistoryList
                         adapter.notifyDataSetChanged()
                     }
