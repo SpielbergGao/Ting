@@ -90,11 +90,11 @@ class MainActivity : AppCompatActivity() {
         sourceBt.background = sourceBtDrawable
         sourceBt.setOnClickListener {
             //切换播放源
-            val source = ACache.get(this@MainActivity).getAsString("source")
+            val source = ACache[this@MainActivity].getAsString("source")
             XPopup.Builder(this@MainActivity)
                 .maxWidth(600)
                 .asCenterList(
-                    "当前host:${if (!TextUtils.isEmpty(source)) source.split("://")[1] else ""} ",
+                    "当前host:${if (!TextUtils.isEmpty(source)) source?.split("://")?.get(1) else ""} ",
                     arrayOf(TingShuUtil.httpHost, TingShuUtil2.httpHost)
                 ) { _, text ->
                     if (text == source) {
@@ -143,7 +143,7 @@ class MainActivity : AppCompatActivity() {
         (context as Activity).startActivityForResult(intent, REQUEST_CODE_APP_INSTALL)
     }
 
-    fun onCheckPermission(){
+    fun onCheckPermission() {
 
         // Toasty.info(this@MainActivity, "版本号:${BuildConfig.VERSION_CODE}", Toast.LENGTH_SHORT, true).show()
         val permissions = arrayListOf(

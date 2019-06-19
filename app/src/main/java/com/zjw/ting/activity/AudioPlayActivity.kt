@@ -235,7 +235,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
 
     private fun setAudioHistory(outState: Bundle? = null) {
 
-        var history = ACache.get(this).getAsObject("history")
+        var history = ACache[this].getAsObject("history")
 
         if (history == null) {
             history = AudioHistorys()
@@ -252,7 +252,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
                 TingShuUtil.sourceHost
             )
 
-        ACache.get(this).put("history", history)
+        ACache[this].put("history", history)
         outState?.let {
             it.putString("url", episodesUrl)
             it.putLong("currentPosition", videoPlayer.gsyVideoManager.currentPosition)

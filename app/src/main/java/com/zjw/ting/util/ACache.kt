@@ -145,18 +145,18 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
 
         var removeFile = false
 
-        var mBufferedReader: BufferedReader? = null
+        val mBufferedReader = BufferedReader(FileReader(file))
 
         try {
-            mBufferedReader = BufferedReader(FileReader(file))
 
-            val readString = StringBuilder()
+            val readString = StringBuffer()
 
             val currentLine: String = mBufferedReader.readLine()
 
-            while (currentLine.isNotEmpty()) {
+            repeat(currentLine.length) {
                 readString.append(currentLine)
             }
+
             return if (!Utils.isDue(readString.toString())) {
                 Utils.clearDateInfo(readString.toString())
             } else {
@@ -169,7 +169,7 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
             return null
         } finally {
             try {
-                mBufferedReader?.close()
+                mBufferedReader.close()
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -596,11 +596,13 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
         private val sizeLimit: Long,
         private val countLimit: Int
     ) {
-        private val cacheSize: AtomicLong = AtomicLong()
-        private val cacheCount: AtomicInteger = AtomicInteger()
+        private val cacheSize: AtomicLong
+        private val cacheCount: AtomicInteger
         private val lastUsageDates = Collections.synchronizedMap(HashMap<File, Long>())
 
         init {
+            cacheSize = AtomicLong()
+            cacheCount = AtomicInteger()
             calculateCacheSizeAndCacheCount()
         }
 
