@@ -3,6 +3,7 @@ package com.zjw.ting.util;
 import org.mozilla.javascript.*;
 
 public class JSEngine {
+
     private Class clazz;
 
     public JSEngine() {
