@@ -103,7 +103,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     if (TextUtils.isEmpty(source) || text != source) {
                         Toasty.success(this@MainActivity, "切源为$text~，即将自动重启app，请稍后").show()
-                        ACache.get(this@MainActivity).put("source", text)
+                        ACache[this@MainActivity].onStringPutCache("source", text)
                         //自动重启
                         val restartIntent = packageManager.getLaunchIntentForPackage(application.packageName)
                         val mPendingIntentId = 123456
