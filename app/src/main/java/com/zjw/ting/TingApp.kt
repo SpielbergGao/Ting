@@ -22,10 +22,10 @@ class TingApp : Application() {
     override fun onCreate() {
         super.onCreate()
         Bugly.init(applicationContext, "880ab32e5a", false)
-        val source = ACache.get(this).getAsString("source")
+        val source = ACache[this].getAsString("source")
         if (TextUtils.isEmpty(source)) {
             TingShuUtil.sourceHost = TingShuUtil.httpHost
-            ACache.get(this).put("source", TingShuUtil.sourceHost)
+            ACache[this].onStringPutCache("source", TingShuUtil.sourceHost)
         } else {
             TingShuUtil.sourceHost = source
         }
