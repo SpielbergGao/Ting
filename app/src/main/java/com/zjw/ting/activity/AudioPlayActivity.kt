@@ -242,6 +242,7 @@ class AudioPlayActivity : AppCompatActivity(), LifecycleOwner {
         }
 
         history as AudioHistorys
+        history.map.remove(intent.getStringExtra("bookUrl"))
         history.map[intent.getStringExtra("bookUrl")] =
             AudioHistory(
                 getTitleStr(),
