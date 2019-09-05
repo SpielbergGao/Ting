@@ -19,8 +19,8 @@ import java.util.ArrayList;
 
 public class TingShuUtil {
     //有声听书吧
-    public static String httpHost = "https://m.ysts8.com";
-    private static String host = "m.ysts8.com";
+    public static String httpHost = "https://m.ysx8.net";
+    private static String host = "m.ysx8.net";
     private static String searchUrl = "/so.asp?keyword=";
     private static long countPage = -1;
 
